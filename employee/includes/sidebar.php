@@ -1,12 +1,58 @@
 
+<?php 
 
-            <!-- sidebar menu -->
+include('../config/config.php');
+
+// Ensure the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../landing_page.php");
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+
+try {
+    // Fetch user details from the database
+    $stmt = $pdo->prepare("SELECT first_name, last_name FROM users WHERE user_id = :user_id");
+    $stmt->execute(['user_id' => $user_id]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user) {
+        throw new Exception("User not found. Please log in again.");
+    }
+
+    // Extract the first and last name
+    $first_name = htmlspecialchars($user['first_name']);
+    $last_name = htmlspecialchars($user['last_name']);
+} catch (Exception $e) {
+    // Handle errors (optional: display error message or redirect)
+    $_SESSION['error_message'] = $e->getMessage();
+    header("Location: ../landing_page.php");
+    exit();
+}
+?>
+
+<div class="navbar nav_title" style="border: 0;">
+    <a href="employee_dashboard.php" class="site_title"><span>LGU Iguig </span></a>
+</div>
+
+            <div class="clearfix"></div>
+
+          <!-- menu profile quick info -->
+          <div class="profile clearfix">
+    <div class="profile_info">
+        <span>Welcome,</span>
+        <h2><?php echo $first_name . " " . $last_name; ?></h2>
+    </div>
+</div>
+          
+          <!-- sidebar menu -->
             <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
               <div class="menu_section">
                 <h3>Reports</h3>
                 
                 <ul class="nav side-menu">
-                
+                <li><a href="send_request_letter.php"><i class="fa fa-paper-plane"></i> Send a Request Letter</a></li>
 
                 <li><a><i class="fa fa-file"></i>Lists of Resolution <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
@@ -36,7 +82,7 @@
                  
                  
                   </li>                  
-                  <li><a href= "#"><i class="fa fa-user"></i> Profile</a></li>
+                  
 
                 </ul>
               </div>

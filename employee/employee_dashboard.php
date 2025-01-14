@@ -1,6 +1,34 @@
 <?php 
-include('../config/config.php')
+session_start();
+include('../config/config.php');
 
+// Ensure the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../landing_page.php");
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+
+try {
+    // Fetch user details from the database
+    $stmt = $pdo->prepare("SELECT first_name, last_name FROM users WHERE user_id = :user_id");
+    $stmt->execute(['user_id' => $user_id]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user) {
+        throw new Exception("User not found. Please log in again.");
+    }
+
+    // Extract the first and last name
+    $first_name = htmlspecialchars($user['first_name']);
+    $last_name = htmlspecialchars($user['last_name']);
+} catch (Exception $e) {
+    // Handle errors (optional: display error message or redirect)
+    $_SESSION['error_message'] = $e->getMessage();
+    header("Location: ../landing_page.php");
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -26,6 +54,50 @@ include('../config/config.php')
     <link href="../prod/build/css/custom.min.css" rel="stylesheet">
 
     <style>
+      .nav_title {
+    display: flex;
+    justify-content: center; /* Centers the text horizontally */
+    align-items: center; /* Centers the text vertically */
+    height: 60px; /* Adjust height if necessary */
+    background-color: #2A3F54; /* Set your desired background color */
+    text-align: center; /* Ensures text is centered inside */
+    border-radius: 5px; /* Optional: Add rounded corners */
+    padding: 10px; /* Add padding for breathing space */
+}
+
+.nav_title .site_title {
+    font-size: 20px; /* Adjust font size for visibility */
+    font-weight: bold; /* Make the text bold */
+    color: white; /* Text color */
+    text-decoration: none; /* Remove underline from the link */
+}
+
+/* Hover effect for LGU Iguig */
+.nav_title .site_title:hover {
+    color: #1ABB9C; /* Optional: Change color on hover */
+    text-decoration: none; /* Keep text underline off */
+}
+      .profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers content horizontally */
+    justify-content: center; /* Centers content vertically */
+    text-align: center; /* Ensures text alignment is centered */
+    padding: 1px; /* Optional: Adjust padding as needed */
+}
+
+.profile_info span {
+    font-size: 16px; /* Adjust font size if necessary */
+    color: white; /* Optional: Change color to match your theme */
+}
+
+.profile_info h2 {
+    font-size: 15px; /* Adjust the font size of the name */
+    margin: 5px 0; /* Add spacing between the span and the name */
+    font-weight: bold; /* Make the name bold */
+    color: white; /* Optional: Change color to match your theme */
+}
+
   .fixed-size-box {
     width: 100%; /* Make sure they are responsive */
     height: 250px; /* Fixed height */
@@ -81,20 +153,8 @@ include('../config/config.php')
       <div class="main_container">
         <div class="col-md-3 left_col">
           <div class="left_col scroll-view">
-            <div class="navbar nav_title" style="border: 0;">
-              <a href="index.html" class="site_title"><span>LGU Iguig</span></a>
-            </div>
 
-            <div class="clearfix"></div>
 
-            <!-- menu profile quick info -->
-            <div class="profile clearfix">
-             
-              <div class="profile_info">
-                <span>Welcome,</span>
-                <h2>John sample</h2>
-              </div>
-            </div>
 
             <?php  include ('includes/sidebar.php');?>
             <?php include ('includes/navbar.php');?>
