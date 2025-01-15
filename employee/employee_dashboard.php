@@ -1,6 +1,6 @@
-<?php 
-session_start();
+<?php
 include('../config/config.php');
+session_start(); // Start session if not already started
 
 // Ensure the user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -10,25 +10,6 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-try {
-    // Fetch user details from the database
-    $stmt = $pdo->prepare("SELECT first_name, last_name FROM users WHERE user_id = :user_id");
-    $stmt->execute(['user_id' => $user_id]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$user) {
-        throw new Exception("User not found. Please log in again.");
-    }
-
-    // Extract the first and last name
-    $first_name = htmlspecialchars($user['first_name']);
-    $last_name = htmlspecialchars($user['last_name']);
-} catch (Exception $e) {
-    // Handle errors (optional: display error message or redirect)
-    $_SESSION['error_message'] = $e->getMessage();
-    header("Location: ../landing_page.php");
-    exit();
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -155,9 +136,8 @@ try {
           <div class="left_col scroll-view">
 
 
-
-            <?php  include ('includes/sidebar.php');?>
-            <?php include ('includes/navbar.php');?>
+          <?php  include ('includes/sidebar.php');?>
+          <?php include ('includes/navbar.php');?>
 
         
 

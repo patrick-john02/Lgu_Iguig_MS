@@ -1,6 +1,6 @@
 <?php
-
 include('../config/config.php');
+
 
 // Ensure the user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -23,12 +23,13 @@ try {
     // Extract the username
     $username = htmlspecialchars($user['username']);
 } catch (Exception $e) {
-    // Handle errors (optional: display error message or redirect)
+    // Handle errors (redirect with error message)
     $_SESSION['error_message'] = $e->getMessage();
     header("Location: ../landing_page.php");
     exit();
 }
 ?>
+
 
 <!-- top navigation -->
 <div class="top_nav">
@@ -44,7 +45,8 @@ try {
                     </a>
                     <div class="dropdown-menu dropdown-usermenu pull-right" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="javascript:;"> Profile</a>
-                        <a class="dropdown-item" href="login.html"><i class="fa fa-sign-out pull-right"></i> Log Out</a>
+                        <a class="dropdown-item" href="logout.php"><i class="fa fa-sign-out pull-right"></i> Log Out</a>
+
                     </div>
                 </li>
                 <li role="presentation" class="nav-item dropdown open">

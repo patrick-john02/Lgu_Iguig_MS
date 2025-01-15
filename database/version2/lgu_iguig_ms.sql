@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 14, 2025 at 08:56 PM
+-- Generation Time: Jan 15, 2025 at 06:26 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -121,8 +121,6 @@ CREATE TABLE `document` (
   `date` date NOT NULL,
   `subject` text NOT NULL,
   `description` text NOT NULL,
-  `status` enum('Pending','Approved','Rejected') DEFAULT 'Pending',
-  `rejection_reason` text DEFAULT NULL,
   `is_archived` tinyint(1) DEFAULT 0,
   `file_path` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -131,8 +129,9 @@ CREATE TABLE `document` (
 -- Dumping data for table `document`
 --
 
-INSERT INTO `document` (`id`, `document_type`, `document_id`, `title`, `authored_by`, `date`, `subject`, `description`, `status`, `rejection_reason`, `is_archived`, `file_path`) VALUES
-(1, 'Resolution', 'DOC001', 'New Memorandum', 3, '2025-01-13', 'Subject 1', 'Description of the document', 'Pending', NULL, 0, NULL);
+INSERT INTO `document` (`id`, `document_type`, `document_id`, `title`, `authored_by`, `date`, `subject`, `description`, `is_archived`, `file_path`) VALUES
+(9, 'Resolution', 'Resolution-00001-15-01-2025', 'sample reso', 3, '2025-01-15', 'sample reso', 'sample reso', 0, '../uploads/678723e71d049.pdf'),
+(10, 'Resolution', 'Resolution-00002-15-01-2025', 'sample reso', 3, '2025-01-15', 'sample reso', 'sample reso', 0, '../uploads/6787245d57b80.pdf');
 
 -- --------------------------------------------------------
 
@@ -148,6 +147,14 @@ CREATE TABLE `documentfiles` (
   `uploaded_at` datetime DEFAULT current_timestamp(),
   `uploaded_by` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `documentfiles`
+--
+
+INSERT INTO `documentfiles` (`id`, `document_id`, `file_type`, `file_path`, `uploaded_at`, `uploaded_by`) VALUES
+(8, 'Resolution-00001-15-01-2025', 'pdf', '../uploads/678723e71d049.pdf', '2025-01-15 10:56:39', 3),
+(9, 'Resolution-00002-15-01-2025', 'pdf', '../uploads/6787245d57b80.pdf', '2025-01-15 10:58:37', 3);
 
 -- --------------------------------------------------------
 
@@ -169,7 +176,8 @@ CREATE TABLE `documenttimeline` (
 --
 
 INSERT INTO `documenttimeline` (`id`, `document_id`, `status`, `status_date`, `action_by`, `action_reason`) VALUES
-(1, 'DOC001', 'Approved', '2025-01-13 12:58:33', 1, 'Document approved by admin');
+(2, 'Resolution-00001-15-01-2025', 'Pending', '2025-01-15 10:56:39', 3, 'Document is pending approval.'),
+(3, 'Resolution-00002-15-01-2025', 'Pending', '2025-01-15 10:58:37', 3, 'Document is pending approval.');
 
 -- --------------------------------------------------------
 
@@ -186,13 +194,6 @@ CREATE TABLE `documenttracking` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `documenttracking`
---
-
-INSERT INTO `documenttracking` (`id`, `document_id`, `related_event_id`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
-(1, 'DOC001', 1, 1, 1, '2025-01-13 12:58:33', '2025-01-13 12:58:33');
 
 -- --------------------------------------------------------
 
@@ -583,19 +584,19 @@ ALTER TABLE `departments`
 -- AUTO_INCREMENT for table `document`
 --
 ALTER TABLE `document`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `documentfiles`
 --
 ALTER TABLE `documentfiles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `documenttimeline`
 --
 ALTER TABLE `documenttimeline`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `documenttracking`

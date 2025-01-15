@@ -43,7 +43,7 @@
   <header id="header" class="header d-flex align-items-center sticky-top">
     <div class="container position-relative d-flex align-items-center">
 
-      <a href="index.html" class="logo d-flex align-items-center me-auto">
+      <a href="landing_page.php" class="logo d-flex align-items-center me-auto">
         
          <img src="prod/assets/img/logo.png" alt=""> 
         <h1 class="sitename"><img src = "prod/assets/img/lgu.jpg" height="220px" width="50">LGU Iguig</h1><span></span>
@@ -51,8 +51,8 @@
 
       <nav id="navmenu" class="navmenu">
         <ul>
-          <li><a href="#hero" class="active">Home</a></li>
-          <li><a href="services.html">About</a></li>
+          <li><a href="landing_page.php" class="active">Home</a></li>
+          <!-- <li><a href="services.html">About</a></li> -->
           <li>
             <button 
               type="button" 
@@ -77,8 +77,8 @@
       
       <div class="header-social-links">
         <!-- <a href="#" class="twitter"><i class="bi bi-twitter-x"></i></a> -->
-        <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
-        <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
+        <a href="https://www.facebook.com/profile.php?id=100066604785144" class="facebook"><i class="bi bi-facebook"></i></a>
+        <a href="https://www.facebook.com/profile.php?id=100066604785144" class="instagram"><i class="bi bi-instagram"></i></a>
         <!-- <a href="#" class="linkedin"><i class="bi bi-linkedin"></i></a> -->
       </div>
 
@@ -267,8 +267,8 @@ if (isset($_SESSION['error_message'])) {
             <p><strong>Email:</strong> <span>iguig@gmail.com</span></p>
           </div>
           <div class="social-links d-flex mt-4">
-            <a href=""><i class="bi bi-facebook"></i></a>
-            <a href=""><i class="bi bi-instagram"></i></a>
+            <a href="https://www.facebook.com/profile.php?id=100066604785144"><i class="bi bi-facebook"></i></a>
+            <a href="https://www.facebook.com/profile.php?id=100066604785144"><i class="bi bi-instagram"></i></a>
           </div>
         </div>
 

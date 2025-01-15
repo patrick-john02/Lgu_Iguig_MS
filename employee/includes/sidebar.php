@@ -1,7 +1,6 @@
-
-<?php 
-
+<?php
 include('../config/config.php');
+
 
 // Ensure the user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -25,12 +24,13 @@ try {
     $first_name = htmlspecialchars($user['first_name']);
     $last_name = htmlspecialchars($user['last_name']);
 } catch (Exception $e) {
-    // Handle errors (optional: display error message or redirect)
+    // Handle errors (redirect with error message)
     $_SESSION['error_message'] = $e->getMessage();
     header("Location: ../landing_page.php");
     exit();
 }
 ?>
+
 
 <div class="navbar nav_title" style="border: 0;">
     <a href="employee_dashboard.php" class="site_title"><span>LGU Iguig </span></a>
@@ -63,18 +63,18 @@ try {
                   </li>
                   <li><a><i class="fa fa-file"></i> Lists of Ordinances <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
-                      <li><a href="form.html">Submitted Ordinances</a></li>
-                      <li><a href="form_advanced.html">Approved Ordinances</a></li>
-                      <li><a href="form_validation.html">Rejected Ordinances</a></li>
+                      <li><a href="submitted_ordinance.php">Submitted Ordinances</a></li>
+                      <li><a href="approved_ordinance.php">Approved Ordinances</a></li>
+                      <li><a href="rejected_ordinance.php">Rejected Ordinances</a></li>
                      
                     </ul>
                   </li>
 
                   <li><a><i class="fa fa-file"></i>Lists of Memorandum <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
-                      <li><a href="form.html">Submitted Memorandum</a></li>
-                      <li><a href="form_advanced.html">Approved Memorandum</a></li>
-                      <li><a href="form_validation.html">Rejected Memorandum</a></li>
+                      <li><a href="submitted_memorandum.php">Submitted Memorandum</a></li>
+                      <li><a href="approved_memorandum.php">Approved Memorandum</a></li>
+                      <li><a href="rejected_memorandum.php">Rejected Memorandum</a></li>
                      
                     </ul>
                   </li>

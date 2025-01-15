@@ -35,11 +35,11 @@ $query = "
     FROM Document d
     LEFT JOIN DocumentTimeline dt ON d.document_id = dt.document_id
     WHERE d.authored_by = :authored_by
-    AND d.document_type = 'Resolution'  -- Filter for Resolution documents only
+    AND d.document_type = 'Memorandum'  -- Filter for Memorandum documents only
     AND (SELECT dt.status 
          FROM DocumentTimeline dt 
          WHERE dt.document_id = d.document_id 
-         ORDER BY dt.status_date DESC LIMIT 1) = 'Rejected'  -- Filter for rejected status from DocumentTimeline
+         ORDER BY dt.status_date DESC LIMIT 1) = 'Approved'  -- Filter for Approved status from DocumentTimeline
     ORDER BY dt.status_date DESC";
 
 
@@ -61,7 +61,7 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Submitted Resolution</title>
+    <title>Submitted Memorandum</title>
 
     <!-- Bootstrap -->
     <link href="cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
@@ -189,8 +189,9 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
           <div class="">
             <div class="page-title">
               <div class="title_left">
-                <h3>Rejected Resolutions Lists</h3>
+                <h3>Approved Memorandum Lists</h3>
               </div>
+
             </div>
 
             <div class="clearfix"></div>
@@ -221,7 +222,7 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
     <thead>
         <tr>
-            <th>Resolution No.</th>
+            <th>Memorandum No.</th>
             <th>Title</th>
             <th>Type</th>
             <th>Date</th>
@@ -247,7 +248,7 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php endforeach; ?>
         <?php else: ?>
             <tr>
-                <td colspan="8" class="text-center">No Rejected resolutions found.</td>
+                <td colspan="8" class="text-center">No Approved Memorandum found.</td>
             </tr>
         <?php endif; ?>
     </tbody>
