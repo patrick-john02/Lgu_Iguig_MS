@@ -8,43 +8,18 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] !== 1) {
 
 include('../config/config.php');
 
-// Fetch total users (admin users only)
-$stmt = $pdo->prepare("SELECT COUNT(*) AS total_users FROM users WHERE role_id = 1 AND status = 'active'");
-$stmt->execute();
-$total_users = $stmt->fetch(PDO::FETCH_ASSOC)['total_users'];
-
-// Fetch total events (non-archived)
-$stmt = $pdo->prepare("SELECT COUNT(*) AS total_events FROM event WHERE is_archived = 0");
-$stmt->execute();
-$total_events = $stmt->fetch(PDO::FETCH_ASSOC)['total_events'];
-
-// Fetch document statuses
-$stmt = $pdo->prepare("SELECT status, COUNT(*) AS count FROM documenttimeline GROUP BY status");
-$stmt->execute();
-$statuses = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$pending = 0;
-$approved = 0;
-$rejected = 0;
-foreach ($statuses as $status) {
-    if ($status['status'] === 'Pending') {
-        $pending = $status['count'];
-    } elseif ($status['status'] === 'Approved') {
-        $approved = $status['count'];
-    } elseif ($status['status'] === 'Rejected') {
-        $rejected = $status['count'];
-    }
+try {
+    // Fetch all users
+    $sql = "SELECT u.user_id, u.username, u.email, u.first_name, u.last_name, u.status, r.role_name
+            FROM users u
+            JOIN roles r ON u.role_id = r.role_id";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Error fetching users: " . $e->getMessage();
+    exit;
 }
-
-// Fetch recent documents (limit to 10)
-$stmt = $pdo->prepare("SELECT d.id, d.document_id, d.title, u.first_name, u.last_name, d.date
-                       FROM document d
-                       JOIN users u ON d.authored_by = u.user_id
-                       WHERE d.is_archived = 0
-                       ORDER BY d.date DESC
-                       LIMIT 10");
-$stmt->execute();
-$recent_documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 
@@ -78,7 +53,7 @@ $recent_documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- Custom Theme Style -->
     <link href="../prod/build/css/custom.min.css" rel="stylesheet">
-    <style>
+<style>
       .nav_title {
     display: flex;
     justify-content: center; 
@@ -185,137 +160,12 @@ $recent_documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
        <!-- page content -->
        <div class="right_col" role="main">
-       <!-- top tiles -->
-<div class="row">
-  <div class="tile_count">
-    <!-- Total Users -->
-    <div class="tile_stats_count">
-      <div class="tile">
-        <span class="count_top"><i class="fa fa-user"></i> Total Users</span>
-        <div class="count"><?= $total_users ?></div>
-      </div>
-    </div>
-    <!-- Total Events -->
-    <div class="tile_stats_count">
-      <div class="tile">
-        <span class="count_top"><i class="fa fa-calendar"></i> Total Events</span>
-        <div class="count"><?= $total_events ?></div>
-      </div>
-    </div>
-    <!-- Pending Documents -->
-    <div class="tile_stats_count">
-      <div class="tile">
-        <span class="count_top"><i class="fa fa-clock-o"></i> Pending</span>
-        <div class="count"><?= $pending ?></div>
-      </div>
-    </div>
-    <!-- Approved Documents -->
-    <div class="tile_stats_count">
-      <div class="tile">
-        <span class="count_top"><i class="fa fa-check"></i> Approved</span>
-        <div class="count"><?= $approved ?></div>
-      </div>
-    </div>
-    <!-- Rejected Documents -->
-    <div class="tile_stats_count">
-      <div class="tile">
-        <span class="count_top"><i class="fa fa-times"></i> Rejected</span>
-        <div class="count"><?= $rejected ?></div>
-      </div>
-    </div>
-    
-  </div>
-</div>
-<!-- /top tiles -->
-<style>
-  .tile_count {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 80px;
-    justify-content: space-evenly;
-  }
-
-  .tile_stats_count {
-    flex: 1; /* Allows tiles to grow and occupy available space evenly */
-    min-width: 180px; /* Ensures tiles remain readable on smaller screens */
-    max-width: 250px; /* Prevents tiles from growing too large */
-  }
-
-  .tile {
-    background-color: #ffffff;
-    padding: 20px 15px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease-in-out;
-    text-align: center;
-    color: #333;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .tile:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-  }
-
-  .tile .count {
-    font-size: 36px;
-    font-weight: bold;
-    color: #333;
-  }
-
-  .count_top {
-    font-size: 16px;
-    color: #666;
-    margin-bottom: 10px;
-  }
-
-  .fa {
-    margin-right: 8px;
-  }
-
-  /* Add unique background colors for each tile */
-  .tile:nth-child(1) {
-    background-color: #f1f8ff;
-  }
-
-  .tile:nth-child(2) {
-    background-color: #e8f7e7;
-  }
-
-  .tile:nth-child(3) {
-    background-color: #fff4e6;
-  }
-
-  .tile:nth-child(4) {
-    background-color: #e9ffe6;
-  }
-
-  .tile:nth-child(5) {
-    background-color: #ffe6e6;
-  }
-
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .tile_count {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .tile_stats_count {
-      max-width: none; /* Remove the max-width on smaller screens */
-      width: 100%; /* Ensure tiles take the full width */
-    }
-  }
-</style>
-
+      
 
 <div class="col-md-12 col-sm-6">
     <div class="x_panel">
         <div class="x_title">
-            <h2>Recent Documents</h2>
+            <h2>List of Users</h2>
             <ul class="nav navbar-right panel_toolbox">
                 <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
                 <li class="dropdown">
@@ -330,33 +180,45 @@ $recent_documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="clearfix"></div>
         </div>
         <div class="x_content">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Document ID</th>
-                        <th>Title</th>
-                        <th>Author</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($recent_documents as $index => $document): ?>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Full Name</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (!empty($users)): ?>
+                    <?php foreach ($users as $user): ?>
                         <tr>
-                            <th scope="row"><?php echo $index + 1; ?></th>
-                            <td><?php echo htmlspecialchars($document['document_id']); ?></td>
-                            <td><?php echo htmlspecialchars($document['title']); ?></td>
-                            <td><?php echo htmlspecialchars($document['first_name'] . ' ' . $document['last_name']); ?></td>
-                            <td><?php echo htmlspecialchars($document['date']); ?></td>
+                            <td><?php echo htmlspecialchars($user['user_id']); ?></td>
+                            <td><?php echo htmlspecialchars($user['username']); ?></td>
+                            <td><?php echo htmlspecialchars($user['email']); ?></td>
+                            <td><?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></td>
+                            <td><?php echo htmlspecialchars($user['role_name']); ?></td>
+                            <td><?php echo htmlspecialchars($user['status']); ?></td>
+                            <td>
+                                <a href="edit_user.php?id=<?php echo $user['user_id']; ?>" class="btn btn-sm btn-warning">
+                                    <i class="fa fa-pencil"></i> Edit
+                                </a>
+                                <a href="delete_user.php?id=<?php echo $user['user_id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this user?');">
+                                    <i class="fa fa-trash"></i> Delete
+                                </a>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
-                    <?php if (empty($recent_documents)): ?>
-                        <tr>
-                            <td colspan="5" class="text-center">No recent documents found.</td>
-                        </tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="7" class="text-center">No users found.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
 
                   </div>
                 </div>
