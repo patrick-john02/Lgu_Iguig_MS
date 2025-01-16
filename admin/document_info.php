@@ -215,6 +215,9 @@ $timeline = $timeline_stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="">
         <div class="page-title">
             <div class="title_left">
+            <a href="http://localhost/DMS_Iguig/admin/submitted_resolution.php" class="btn btn-secondary">
+                    <i class="fa fa-arrow-left"></i> Back to List
+                </a>
                 <h3>Document Detail</h3>
             </div>
         </div>

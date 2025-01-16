@@ -14,18 +14,12 @@ try {
         d.title AS resolution_title,
         d.date AS resolution_date,
         d.subject AS resolution_subject,
-        CONCAT(u.first_name, ' ', u.last_name) AS author_name,
-        dt.status AS resolution_status
+        CONCAT(u.first_name, ' ', u.last_name) AS author_name
     FROM document d
-    LEFT JOIN documenttimeline dt ON d.document_id = dt.document_id
     LEFT JOIN users u ON d.authored_by = u.user_id
     WHERE d.document_type = 'Resolution'
-    AND dt.status IN ('Pending', 'First Reading', 'Second Reading', 'Third Reading', 'Committee Review', 'For Approval')
     ORDER BY d.date DESC
-";
-
-
-
+    ";
 
     $stmt = $pdo->prepare($query);
     $stmt->execute();
@@ -191,7 +185,6 @@ try {
             <th class="column-title">Resolution Title</th>
             <th class="column-title">Date</th>
             <th class="column-title">Author</th>
-            <th class="column-title">Status</th>
             <th class="column-title no-link last"><span class="nobr">Action</span></th>
         </tr>
     </thead>
@@ -206,15 +199,14 @@ try {
                     <td class=" "><?php echo htmlspecialchars($resolution['resolution_title']); ?></td>
                     <td class=" "><?php echo htmlspecialchars($resolution['resolution_date']); ?></td>
                     <td class=" "><?php echo htmlspecialchars($resolution['author_name']); ?></td>
-                    <td class=" "><?php echo htmlspecialchars($resolution['resolution_status']); ?></td>
                     <td class=" last">
-                    <a href="document_info.php?document_id=<?php echo urlencode($resolution['document_id']); ?>">View</a>
+                        <a href="document_info.php?document_id=<?php echo urlencode($resolution['document_id']); ?>">View</a>
                     </td>
                 </tr>
             <?php endforeach; ?>
         <?php else: ?>
             <tr>
-                <td colspan="7" class="text-center">No resolutions found.</td>
+                <td colspan="6" class="text-center">No resolutions found.</td>
             </tr>
         <?php endif; ?>
     </tbody>

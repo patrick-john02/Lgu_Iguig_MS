@@ -9,31 +9,50 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] !== 1) {
 
 include('../config/config.php'); // Database configuration
 
+$message = ''; // Variable to store success/error messages
+
 if (isset($_POST['create_event'])) {
     // Sanitize and validate input
-    $title = $_POST['title'];
-    $description = $_POST['descr'];
-    $event_date = $_POST['event_date'];  // The event date will be populated automatically
-    $event_type = $_POST['event_type'];
+    $title = htmlspecialchars(trim($_POST['title']));
+    $description = htmlspecialchars(trim($_POST['descr']));
+    $event_date = $_POST['event_date']; // The event date populated by the FullCalendar
+    $event_type = htmlspecialchars(trim($_POST['event_type']));
     $approved_by = $_SESSION['user_id']; // Admin who is creating the event
 
-    // Query to insert event into the database using PDO
-    $query = "INSERT INTO `event` (`name`, `date`, `event_type`, `approved_by`) 
-              VALUES (:title, :event_date, :event_type, :approved_by)";
-    
-    $stmt = $pdo->prepare($query);
-    $stmt->bindParam(':title', $title);
-    $stmt->bindParam(':event_date', $event_date);
-    $stmt->bindParam(':event_type', $event_type);
-    $stmt->bindParam(':approved_by', $approved_by);
-    
-    if ($stmt->execute()) {
-        $message = "Event created successfully.";
+    // Debugging: Check if input is received correctly
+    if (empty($title) || empty($description) || empty($event_date) || empty($event_type)) {
+        $message = "All fields must be filled.";
     } else {
-        $message = "Error creating event: " . $stmt->errorInfo()[2]; // PDO error
+        // Query to insert event into the database using PDO
+        $query = "INSERT INTO `event` (`name`, `date`, `event_type`, `approved_by`) 
+                  VALUES (:title, :event_date, :event_type, :approved_by)";
+        
+        try {
+            $stmt = $pdo->prepare($query);
+            $stmt->bindParam(':title', $title);
+            $stmt->bindParam(':event_date', $event_date);
+            $stmt->bindParam(':event_type', $event_type);
+            $stmt->bindParam(':approved_by', $approved_by);
+            
+            if ($stmt->execute()) {
+                $message = "Event created successfully.";
+            } else {
+                $message = "Error creating event: " . implode(", ", $stmt->errorInfo()); // PDO error
+            }
+        } catch (Exception $e) {
+            $message = "Error creating event: " . $e->getMessage();
+        }
     }
 }
 
+// Fetch existing events to display (add a query to get events)
+$events = [];
+try {
+    $stmt = $pdo->query("SELECT * FROM `event`");
+    $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $message = "Error fetching events: " . $e->getMessage();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -54,8 +73,20 @@ if (isset($_POST['create_event'])) {
     <!-- NProgress -->
     <link href="../prod/vendors/nprogress/nprogress.css" rel="stylesheet">
     <!-- FullCalendar -->
-    <link href="../prod/vendors/fullcalendar/dist/fullcalendar.min.css" rel="stylesheet">
-    <link href="../prod/vendors/fullcalendar/dist/fullcalendar.print.css" rel="stylesheet" media="print">
+
+    <!-- Pikaday CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.8.0/css/pikaday.min.css">
+
+<!-- Pikaday JavaScript -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.8.0/pikaday.min.js"></script>
+
+<!-- FullCalendar CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.2.0/fullcalendar.min.css" rel="stylesheet">
+
+<!-- FullCalendar JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.2.0/fullcalendar.min.js"></script>
+
 
     <!-- Custom styling plus plugins -->
     <link href="../prod/build/css/custom.min.css" rel="stylesheet">
@@ -159,223 +190,136 @@ if (isset($_POST['create_event'])) {
       <div class="main_container">
         <div class="col-md-3 left_col">
           <div class="left_col scroll-view">
-
-         
-          <?php  include ('includes/admin_sidebar.php');?>
-          <?php include ('includes/admin_navbar.php');?>
-
-       <!-- page content -->
-       <div class="right_col" role="main">
-       <div class="x_content">
-
-       <div class="row">
-              <div class="col-md-12">
-                <div class="x_panel">
-                  <div class="x_title">
-                    <h2>Events</h2>
-                    <ul class="nav navbar-right panel_toolbox">
-                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
-                      </li>
-                      <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="#">Settings 1</a>
-                            <a class="dropdown-item" href="#">Settings 2</a>
-                          </div>
-                      </li>
-                      <li><a class="close-link"><i class="fa fa-close"></i></a>
-                      </li>
-                    </ul>
-                    <div class="clearfix"></div>
-                  </div>
-                  <div class="x_content">
-
-                    <div id='calendar'></div>
-
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+            <?php include('includes/admin_sidebar.php'); ?>
+            <?php include('includes/admin_navbar.php'); ?>
         </div>
-        <!-- /page content -->
+        <div class="right_col" role="main">
+            <div class="x_content">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="x_panel">
+                            <div class="x_title">
+                            <h2>Events</h2>
+<!-- Button to trigger the modal positioned at the top-right corner -->
+<div class="text-right">
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#eventModal">
+        Create New Event
+    </button>
 </div>
-              </div>
-          </div>
+
+                            </div>
+                            <div class="x_content">
+                                <div class="events-list">
+                                    <h3>Upcoming Events</h3>
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Date</th>
+                                                <th>Event Type</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($events as $event): ?>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($event['name']); ?></td>
+                                                    <td><?php echo htmlspecialchars($event['date']); ?></td>
+                                                    <td><?php echo htmlspecialchars($event['event_type']); ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="calendar"></div>
         </div>
-        <footer>
-          <div class="pull-right">
-          
-          </div>
-          <div class="clearfix"></div>
-        </footer>
-         <!-- footer content -->
-         <footer>
-          <div class="pull-right">
-           
-          </div>
-          <div class="clearfix"></div>
-        </footer>
-        <!-- /footer content -->
       </div>
     </div>
-    <?php
-// Fetch events from the database to display on the calendar
-$events_query = "SELECT id, name, date FROM event WHERE is_archived = 0 ORDER BY date";
-$stmt = $pdo->prepare($events_query);
-$stmt->execute();
-$events = [];
-while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    $events[] = [
-        'title' => $row['name'],
-        'start' => $row['date'],
-        'id' => $row['id']
-    ];
-}
+  <!-- Modal for creating event -->
+<div id="eventModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Event</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="eventForm" action="admin_events.php" method="post">
+                    <div class="form-group">
+                        <label for="title">Event Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="descr">Description</label>
+                        <input type="text" class="form-control" id="descr" name="descr" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="event_date">Event Date</label>
+                        <!-- Date Picker Input with min and max attributes -->
+                        <input type="date" class="form-control" id="event_date" name="event_date" required min="2000-01-02" max="2030-12-31">
+                    </div>
+                    <div class="form-group">
+                        <label for="event_type">Event Type</label>
+                        <select class="form-control" id="event_type" name="event_type">
+                            <option value="Cultural">Cultural</option>
+                            <option value="Special Session">Special Session</option>
+                            <option value="Governmental">Governmental</option>
+                        </select>
+                    </div>
+                    <button type="submit" name="create_event" class="btn btn-primary">Create Event</button>
+                </form>
+                <!-- Show message if any -->
+                <?php if ($message): ?>
+                    <div class="alert alert-info"><?php echo htmlspecialchars($message); ?></div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
 
-?>
 <script>
-  $(document).ready(function() {
-    $('#calendar').fullCalendar({
-      events: <?php echo json_encode($events); ?>, // Ensure the PHP array is passed correctly to JavaScript
-      eventClick: function(event) {
-        // If you need to handle event clicks, you can add an event handler here
-        alert('Event: ' + event.title);
-      }
+    $(document).ready(function() {
+        // Initialize the datepicker
+        $('#event_date').datepicker({
+            format: 'yyyy-mm-dd', // Use the format YYYY-MM-DD
+            startDate: '0d', // Disable past dates
+            autoclose: true // Close datepicker after selection
+        });
     });
-  });
 </script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
-
-    <!-- calendar modal -->
-    <div id="CalenderModalNew" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h4 class="modal-title" id="myModalLabel">New Calendar Entry</h4>
-          </div>
-          <div class="modal-body">
-            <div id="testmodal" style="padding: 5px 20px;">
-            <form id="antoform" class="form-horizontal calender" role="form" method="POST" action="admin_events.php">
-  <div class="form-group">
-    <label class="col-sm-3 control-label">Title</label>
-    <div class="col-sm-9">
-      <input type="text" class="form-control" id="title" name="title" required>
-    </div>
-  </div>
-  <div class="form-group">
-    <label class="col-sm-3 control-label">Description</label>
-    <div class="col-sm-9">
-      <textarea class="form-control" style="height:55px;" id="descr" name="descr" required></textarea>
-    </div>
-  </div>
-  <div class="form-group">
-    <label class="col-sm-3 control-label">Event Date</label>
-    <div class="col-sm-9">
-      <input type="date" class="form-control" id="event_date" name="event_date" required>
-    </div>
-  </div>
-  <div class="form-group">
-    <label class="col-sm-3 control-label">Event Type</label>
-    <div class="col-sm-9">
-      <select class="form-control" name="event_type" required>
-        <option value="Cultural">Cultural</option>
-        <option value="Special Session">Special Session</option>
-        <option value="Governmental">Governmental</option>
-      </select>
-    </div>
-  </div>
-  <input type="submit" class="btn btn-primary antosubmit" name="create_event" value="Save Event">
-</form>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default antoclose" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary antosubmit">Save changes</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div id="CalenderModalEdit" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h4 class="modal-title" id="myModalLabel2">Edit Calendar Entry</h4>
-          </div>
-          <div class="modal-body">
-
-            <div id="testmodal2" style="padding: 5px 20px;">
-              <form id="antoform2" class="form-horizontal calender" role="form">
-                <div class="form-group">
-                  <label class="col-sm-3 control-label">Title</label>
-                  <div class="col-sm-9">
-                    <input type="text" class="form-control" id="title2" name="title2">
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="col-sm-3 control-label">Description</label>
-                  <div class="col-sm-9">
-                    <textarea class="form-control" style="height:55px;" id="descr2" name="descr"></textarea>
-                  </div>
-                </div>
-
-              </form>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default antoclose2" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary antosubmit2">Save changes</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="fc_create" data-toggle="modal" data-target="#CalenderModalNew"></div>
-    <div id="fc_edit" data-toggle="modal" data-target="#CalenderModalEdit"></div>
-    <!-- /calendar modal -->
-        
-    <!-- jQuery -->
-    <script src="../prod/vendors/jquery/dist/jquery.min.js"></script>
-    <!-- Bootstrap -->
-   <script src="../prod/vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- FastClick -->
-    <script src="../prod/vendors/fastclick/lib/fastclick.js"></script>
-    <!-- NProgress -->
-    <script src="../prod/vendors/nprogress/nprogress.js"></script>
-    <!-- FullCalendar -->
-    <script src="../prod/vendors/moment/min/moment.min.js"></script>
-    <script src="../prod/vendors/fullcalendar/dist/fullcalendar.min.js"></script>
-
-    <!-- Custom Theme Scripts -->
-    <script src="../prod/build/js/custom.min.js"></script>
-
-    <script>
-  $(document).ready(function() {
-    // Initialize FullCalendar
-    $('#calendar').fullCalendar({
-      events: <?php echo json_encode($events); ?>, // Pass the PHP events to JavaScript
-      eventClick: function(event) {
-        // When an event is clicked, populate the edit modal and show it
-        alert('Event: ' + event.title);  // Optionally show event title
-        $('#title2').val(event.title);  // Fill in the event title
-        $('#descr2').val(event.description); // Fill in the event description (if available)
-        $('#event_date').val(event.start.format('YYYY-MM-DD')); // Set the event date
-        $('#CalenderModalEdit').modal('show'); // Show the edit modal
-      },
-      dayClick: function(date, jsEvent, view) {
-        // When a day is clicked, pre-fill the event date field
-        var clickedDate = date.format(); // Get the clicked date (e.g., 2025-01-16)
-        
-        // Set the date field in the event creation modal
-        $('#event_date').val(clickedDate);  // Set the event date to the clicked date
-        $('#CalenderModalNew').modal('show'); // Show the create event modal
-      }
+<!-- jQuery -->
+<script src="../prod/vendors/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap -->
+<script src="../prod/vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<!-- FullCalendar JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.2.0/fullcalendar.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#calendar').fullCalendar({
+            events: [
+                <?php foreach ($events as $event): ?>
+                    {
+                        title: '<?php echo htmlspecialchars($event['name']); ?>',
+                        start: '<?php echo htmlspecialchars($event['date']); ?>',
+                        description: '<?php echo htmlspecialchars($event['event_type']); ?>'
+                    },
+                <?php endforeach; ?>
+            ],
+            eventClick: function(event) {
+                alert('Event: ' + event.title + '\n' + event.description);
+            }
+        });
     });
-  });
 </script>
-  </body>
+</body>
 </html>
