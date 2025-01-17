@@ -24,17 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-
-        var_dump($user);  // Check if the user is fetched correctly
-
-        // Check if the user is found and the password matches using SHA-256
-        if ($user && hash('sha256', $password) === $user['password']) {
+        // Check if the user is found and verify the password using bcrypt
+        if ($user && password_verify($password, $user['password'])) {
             // Login successful, store only user_id and role_id in session
             $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['role_id'] = $user['role_id'];  // Store role_id in session
-
-
-            var_dump($_SESSION);  // This will show session data before redirect
 
             // Redirect to the admin dashboard
             header("Location: admin_dashboard.php");

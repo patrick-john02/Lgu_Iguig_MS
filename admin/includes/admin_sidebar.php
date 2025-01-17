@@ -60,8 +60,8 @@ try {
                     <ul class="nav child_menu">
                       <li><a href="submitted_resolution.php">Submitted Resolutions</a></li>
                       <li><a href="approved_resolution.php">Approved Resolutions</a></li>
-                      <li><a href="rejected_resolution.php">Rejected Resolutions</a></li>
-                      <li><a href="archived_resolution.php">Archived Resolutions</a></li>
+                      <li><a href="rejected_resolutions.php">Rejected Resolutions</a></li>
+                      <li><a href="archive_resolutions.php">Archived Resolutions</a></li>
                     </ul>
                   </li>
                   <li><a><i class="fa fa-file"></i> Lists of Ordinances <span class="fa fa-chevron-down"></span></a>

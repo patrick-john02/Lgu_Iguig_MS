@@ -23,8 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 2. Generate random password with specific requirements
     $password = generatePassword(8); // 8 characters password
 
-    // 3. Hash the password (SHA256)
-    $hashed_password = hash('sha256', $password);  // For consistency with your earlier password hash example
+    // 3. Hash the password (Bcrypt)
+    $hashed_password = password_hash($password, PASSWORD_BCRYPT);  // Use bcrypt for password hashing
 
     try {
         // Insert the new user into the database
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([
             ':username' => $username,
             ':email' => $email,
-            ':password' => $hashed_password,  // Store the hashed password (SHA256)
+            ':password' => $hashed_password,  // Store the bcrypt hashed password
             ':first_name' => $first_name,
             ':last_name' => $last_name,
             ':role_id' => $role_id,
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Redirect with success message
         $_SESSION['success_message'] = "User created successfully!";
-        header("Location: manage_user.php");
+        header("Location: /admin/manage_users.php");
         exit;
 
     } catch (PDOException $e) {
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Redirect with error message
-        header("Location: http://localhost/DMS_Iguig/admin/manage_users.php");
+        header("Location: /admin/manage_users.php");
         exit;
     }
 }

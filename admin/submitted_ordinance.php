@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] !== 1) {
 
 include('../config/config.php');
 
-// Handle archiving of submitted resolutions via POST request
+// Handle archiving of submitted Ordinance via POST request
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Get the document IDs from the POST request (AJAX)
     $documentIds = json_decode($_POST['document_ids'], true);
@@ -23,9 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare($query);
             $stmt->execute($documentIds);
 
-            echo "Submitted resolutions archived successfully!";
+            echo "Submitted Ordinance archived successfully!";
         } catch (PDOException $e) {
-            echo "Error archiving resolutions: " . $e->getMessage();
+            echo "Error archiving Ordinances: " . $e->getMessage();
         }
     } else {
         echo "No document IDs provided.";
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// Fetch all non-archived, non-approved, and non-rejected resolutions
+// Fetch all non-archived, non-approved, and non-rejected Ordinances
 try {
     $query = "
         SELECT 
@@ -44,7 +44,7 @@ try {
             CONCAT(u.first_name, ' ', u.last_name) AS author_name
         FROM document d
         LEFT JOIN users u ON d.authored_by = u.user_id
-        WHERE d.document_type = 'Resolution'
+        WHERE d.document_type = 'Ordinance'
           AND d.is_archived = 0  -- Exclude archived resolutions
           AND d.is_approved = 0  -- Exclude approved resolutions
           AND d.is_rejected = 0  -- Exclude rejected resolutions
@@ -56,7 +56,7 @@ try {
 
     $resolutions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    echo "Error fetching resolutions: " . $e->getMessage();
+    echo "Error fetching Ordinance: " . $e->getMessage();
     exit;
 }
 ?>
@@ -202,7 +202,7 @@ try {
        <div class="right_col" role="main">
        <div class="x_content">
 
-<p>Submitted Resolutions</p>
+<p>Submitted Ordinances</p>
 <div class="row no-print">
     <div class="">
         <button class="btn btn-default" onclick="printTable();"><i class="fa fa-print"></i> Print Table</button>
@@ -221,8 +221,8 @@ try {
             <td class="a-center">
                 <input type="checkbox" id="check-all" class="flat">
             </td>
-            <th class="column-title">Resolution ID</th>
-            <th class="column-title">Resolution Title</th>
+            <th class="column-title">Ordinance ID</th>
+            <th class="column-title">Ordinance Title</th>
             <th class="column-title">Date</th>
             <th class="column-title">Author</th>
             <th class="column-title no-link last"><span class="nobr">Action</span></th>
@@ -246,7 +246,7 @@ try {
             <?php endforeach; ?>
         <?php else: ?>
             <tr>
-                <td colspan="6" class="text-center">No submitted resolutions found.</td>
+                <td colspan="6" class="text-center">No submitted Ordinances found.</td>
             </tr>
         <?php endif; ?>
     </tbody>
@@ -310,7 +310,7 @@ try {
         printWindow.document.write('</div>');  // End header div
         
         // Add the table content to the print window within a container to center it
-        printWindow.document.write('<p>Below is the list of submitted resolutions:</p>');
+        printWindow.document.write('<p>Below is the list of submitted Ordinances:</p>');
         printWindow.document.write('<div class="table-container">');
        
         printWindow.document.write(tableContent);
@@ -357,19 +357,19 @@ document.getElementById('archiveButton').addEventListener('click', function() {
         }
     });
 
-    // Check if any resolutions are selected
+    // Check if any Ordinance are selected
     if (selectedIds.length > 0) {
-        console.log("Selected Resolutions to Archive: ", selectedIds); // Debugging
+        console.log("Selected Ordinances to Archive: ", selectedIds); // Debugging
 
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'submitted_resolution.php', true);
+        xhr.open('POST', 'submitted_ordinance.php', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.onload = function() {
             if (xhr.status === 200) {
-                alert('Resolutions archived successfully!');
+                alert('Ordinance archived successfully!');
                 location.reload(); // Reload to reflect changes
             } else {
-                alert('Failed to archive resolutions.');
+                alert('Failed to archive Ordinances.');
             }
         };
 

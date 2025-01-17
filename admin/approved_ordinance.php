@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] !== 1) {
 
 include('../config/config.php');
 
-// Handle archiving of submitted resolutions via POST request
+// Handle archiving of approved Ordinance via POST request
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Get the document IDs from the POST request (AJAX)
     $documentIds = json_decode($_POST['document_ids'], true);
@@ -23,9 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare($query);
             $stmt->execute($documentIds);
 
-            echo "Submitted resolutions archived successfully!";
+            echo "Approved Ordinances archived successfully!";
         } catch (PDOException $e) {
-            echo "Error archiving resolutions: " . $e->getMessage();
+            echo "Error archiving Ordinances: " . $e->getMessage();
         }
     } else {
         echo "No document IDs provided.";
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// Fetch all non-archived, non-approved, and non-rejected resolutions
+// Fetch all non-archived, approved Ordinance
 try {
     $query = "
         SELECT 
@@ -41,13 +41,21 @@ try {
             d.title AS resolution_title,
             d.date AS resolution_date,
             d.subject AS resolution_subject,
-            CONCAT(u.first_name, ' ', u.last_name) AS author_name
+            CONCAT(u.first_name, ' ', u.last_name) AS author_name,
+            dt.status AS resolution_status
         FROM document d
         LEFT JOIN users u ON d.authored_by = u.user_id
-        WHERE d.document_type = 'Resolution'
-          AND d.is_archived = 0  -- Exclude archived resolutions
-          AND d.is_approved = 0  -- Exclude approved resolutions
-          AND d.is_rejected = 0  -- Exclude rejected resolutions
+        LEFT JOIN (
+            SELECT 
+                document_id, 
+                status
+            FROM documenttimeline
+            WHERE status IN ('Approved', 'Rejected')
+            ORDER BY status_date DESC
+        ) dt ON dt.document_id = d.document_id
+        WHERE d.document_type = 'Ordinance'
+          AND d.is_archived = 0
+          AND d.is_approved = 1
         ORDER BY d.date DESC
     ";
 
@@ -56,11 +64,10 @@ try {
 
     $resolutions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    echo "Error fetching resolutions: " . $e->getMessage();
+    echo "Error fetching Ordinances: " . $e->getMessage();
     exit;
 }
 ?>
-
 
 
 <!DOCTYPE html>
@@ -202,7 +209,7 @@ try {
        <div class="right_col" role="main">
        <div class="x_content">
 
-<p>Submitted Resolutions</p>
+<p>Approved Ordinances</p>
 <div class="row no-print">
     <div class="">
         <button class="btn btn-default" onclick="printTable();"><i class="fa fa-print"></i> Print Table</button>
@@ -221,10 +228,11 @@ try {
             <td class="a-center">
                 <input type="checkbox" id="check-all" class="flat">
             </td>
-            <th class="column-title">Resolution ID</th>
-            <th class="column-title">Resolution Title</th>
+            <th class="column-title">Ordinance ID</th>
+            <th class="column-title">Ordinance Title</th>
             <th class="column-title">Date</th>
             <th class="column-title">Author</th>
+            <th class="column-title">Status</th>
             <th class="column-title no-link last"><span class="nobr">Action</span></th>
         </tr>
     </thead>
@@ -239,6 +247,7 @@ try {
                     <td class=""><?php echo htmlspecialchars($resolution['resolution_title']); ?></td>
                     <td class=""><?php echo htmlspecialchars($resolution['resolution_date']); ?></td>
                     <td class=""><?php echo htmlspecialchars($resolution['author_name']); ?></td>
+                    <td class=""><?php echo htmlspecialchars($resolution['resolution_status']); ?></td>
                     <td class="last">
                         <a href="document_info.php?document_id=<?php echo urlencode($resolution['document_id']); ?>">View</a>
                     </td>
@@ -246,12 +255,11 @@ try {
             <?php endforeach; ?>
         <?php else: ?>
             <tr>
-                <td colspan="6" class="text-center">No submitted resolutions found.</td>
+                <td colspan="7" class="text-center">No Approved Ordinances found.</td>
             </tr>
         <?php endif; ?>
     </tbody>
 </table>
-
 <button id="archiveButton" class="btn btn-danger">Archive</button>
 
 </div>
@@ -310,7 +318,7 @@ try {
         printWindow.document.write('</div>');  // End header div
         
         // Add the table content to the print window within a container to center it
-        printWindow.document.write('<p>Below is the list of submitted resolutions:</p>');
+        printWindow.document.write('<p>Below is the list of Approved Ordinances:</p>');
         printWindow.document.write('<div class="table-container">');
        
         printWindow.document.write(tableContent);
@@ -357,19 +365,19 @@ document.getElementById('archiveButton').addEventListener('click', function() {
         }
     });
 
-    // Check if any resolutions are selected
+    // Check if any Ordinances are selected
     if (selectedIds.length > 0) {
-        console.log("Selected Resolutions to Archive: ", selectedIds); // Debugging
+        console.log("Selected Ordinances to Archive: ", selectedIds); // Debugging
 
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'submitted_resolution.php', true);
+        xhr.open('POST', 'approved_ordinance.php', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.onload = function() {
             if (xhr.status === 200) {
-                alert('Resolutions archived successfully!');
+                alert('Approved Ordinances archived successfully!');
                 location.reload(); // Reload to reflect changes
             } else {
-                alert('Failed to archive resolutions.');
+                alert('Failed to archive Approved Ordinances.');
             }
         };
 

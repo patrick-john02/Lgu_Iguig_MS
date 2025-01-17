@@ -10,34 +10,54 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] !== 1) {
 include('../config/config.php'); // Database configuration
 
 $message = ''; // Variable to store success/error messages
+$events = [];  // Initialize $events array
 
 if (isset($_POST['create_event'])) {
-    // Sanitize and validate input
     $title = htmlspecialchars(trim($_POST['title']));
-    $description = htmlspecialchars(trim($_POST['descr']));
-    $event_date = $_POST['event_date']; // The event date populated by the FullCalendar
+    $event_date = $_POST['event_date'];
     $event_type = htmlspecialchars(trim($_POST['event_type']));
-    $approved_by = $_SESSION['user_id']; // Admin who is creating the event
+    $approved_by = $_SESSION['user_id'];
 
-    // Debugging: Check if input is received correctly
-    if (empty($title) || empty($description) || empty($event_date) || empty($event_type)) {
+    // Handle file upload
+$image_path = null;
+if (isset($_FILES['event_image']) && $_FILES['event_image']['error'] === UPLOAD_ERR_OK) {
+    $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+    $file_type = mime_content_type($_FILES['event_image']['tmp_name']);
+
+    if (in_array($file_type, $allowed_types)) {
+        $upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/DMS_Iguig/uploads/events/';
+        $image_name = basename($_FILES['event_image']['name']);
+        $unique_file = uniqid() . '_' . $image_name;
+        $target_file = $upload_dir . $unique_file;
+
+        if (move_uploaded_file($_FILES['event_image']['tmp_name'], $target_file)) {
+            $image_path = '/uploads/events/' . $unique_file;
+        } else {
+            $message = "Failed to upload the image.";
+        }
+    } else {
+        $message = "Invalid file type. Please upload JPG, PNG, or GIF images.";
+    }
+}
+
+    if (empty($title) || empty($event_date) || empty($event_type)) {
         $message = "All fields must be filled.";
     } else {
-        // Query to insert event into the database using PDO
-        $query = "INSERT INTO `event` (`name`, `date`, `event_type`, `approved_by`) 
-                  VALUES (:title, :event_date, :event_type, :approved_by)";
-        
+        $query = "INSERT INTO `event` (`name`, `date`, `event_type`, `approved_by`, `image_path`) 
+          VALUES (:title, :event_date, :event_type, :approved_by, :image_path)";
+
         try {
             $stmt = $pdo->prepare($query);
             $stmt->bindParam(':title', $title);
             $stmt->bindParam(':event_date', $event_date);
             $stmt->bindParam(':event_type', $event_type);
             $stmt->bindParam(':approved_by', $approved_by);
-            
+            $stmt->bindParam(':image_path', $image_path);
+
             if ($stmt->execute()) {
                 $message = "Event created successfully.";
             } else {
-                $message = "Error creating event: " . implode(", ", $stmt->errorInfo()); // PDO error
+                $message = "Error creating event: " . implode(", ", $stmt->errorInfo());
             }
         } catch (Exception $e) {
             $message = "Error creating event: " . $e->getMessage();
@@ -45,10 +65,10 @@ if (isset($_POST['create_event'])) {
     }
 }
 
-// Fetch existing events to display (add a query to get events)
-$events = [];
+
+// Fetch events for the calendar and table
 try {
-    $stmt = $pdo->query("SELECT * FROM `event`");
+    $stmt = $pdo->query("SELECT id, name AS title, date AS start, event_type, image_path FROM `event` WHERE is_archived = FALSE");
     $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
     $message = "Error fetching events: " . $e->getMessage();
@@ -176,6 +196,11 @@ try {
   .top_tiles .col-lg-3, .top_tiles .col-md-3, .top_tiles .col-sm-6 {
     padding: 10px;
   }
+  #calendar {
+    width: 100%;   /* Ensure it takes full width */
+    height: 600px;  /* Adjust height as needed */
+    margin-top: 20px;
+}
 
   @media (max-width: 767px) {
     .tile-stats.fixed-size-box {
@@ -206,95 +231,152 @@ try {
         Create New Event
     </button>
 </div>
-
                             </div>
                             <div class="x_content">
                                 <div class="events-list">
                                     <h3>Upcoming Events</h3>
                                     <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Title</th>
-                                                <th>Date</th>
-                                                <th>Event Type</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($events as $event): ?>
-                                                <tr>
-                                                    <td><?php echo htmlspecialchars($event['name']); ?></td>
-                                                    <td><?php echo htmlspecialchars($event['date']); ?></td>
-                                                    <td><?php echo htmlspecialchars($event['event_type']); ?></td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
+    <thead>
+        <tr>
+            <th>Image</th>
+            <th>Title</th>
+            <th>Date</th>
+            <th>Event Type</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($events as $event): ?>
+            <tr>
+                <td>
+                    <?php if (!empty($event['image_path'])): ?>
+                        <!-- Button to view the image in a new tab -->
+                        <a href="<?php echo htmlspecialchars('..' . $event['image_path']); ?>" target="_blank" class="btn btn-primary">View</a>
+                    <?php else: ?>
+                        No Image
+                    <?php endif; ?>
+                </td>
+                <td><?php echo htmlspecialchars($event['title']); ?></td>
+                <td><?php echo htmlspecialchars($event['start']); ?></td>
+                <td><?php echo htmlspecialchars($event['event_type']); ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+
                                 </div>
+                                <div id="calendar"></div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="calendar"></div>
-        </div>
-      </div>
-    </div>
-  <!-- Modal for creating event -->
-<div id="eventModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+                  
+                            <div id="eventModalDetails" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Create Event</h5>
+                <h5 class="modal-title">Event Details</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <form id="eventForm" action="admin_events.php" method="post">
-                    <div class="form-group">
-                        <label for="title">Event Title</label>
-                        <input type="text" class="form-control" id="title" name="title" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="descr">Description</label>
-                        <input type="text" class="form-control" id="descr" name="descr" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="event_date">Event Date</label>
-                        <!-- Date Picker Input with min and max attributes -->
-                        <input type="date" class="form-control" id="event_date" name="event_date" required min="2000-01-02" max="2030-12-31">
-                    </div>
-                    <div class="form-group">
-                        <label for="event_type">Event Type</label>
-                        <select class="form-control" id="event_type" name="event_type">
-                            <option value="Cultural">Cultural</option>
-                            <option value="Special Session">Special Session</option>
-                            <option value="Governmental">Governmental</option>
-                        </select>
-                    </div>
-                    <button type="submit" name="create_event" class="btn btn-primary">Create Event</button>
-                </form>
-                <!-- Show message if any -->
-                <?php if ($message): ?>
-                    <div class="alert alert-info"><?php echo htmlspecialchars($message); ?></div>
-                <?php endif; ?>
+                <img src="" alt="Event Image" class="event-image img-fluid mb-3" style="max-width: 100%; height: auto; display: none;">
+                <p><strong>Date:</strong> <span class="event-date"></span></p>
+                <p><strong>Type:</strong> <span class="event-type"></span></p>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    $(document).ready(function() {
-        // Initialize the datepicker
-        $('#event_date').datepicker({
-            format: 'yyyy-mm-dd', // Use the format YYYY-MM-DD
-            startDate: '0d', // Disable past dates
-            autoclose: true // Close datepicker after selection
-        });
-    });
-</script>
+     
+                
+                
+                
+   <!-- Modal for creating event -->
+   <div id="eventModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Event</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                <form id="eventForm" action="admin_events.php" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="title">Event Title</label>
+        <input type="text" class="form-control" id="title" name="title" required>
+    </div>
+    <div class="form-group">
+        <label for="event_date">Event Date</label>
+        <input type="date" class="form-control" id="event_date" name="event_date" required min="2000-01-02" max="2030-12-31">
+    </div>
+    <div class="form-group">
+        <label for="event_type">Event Type</label>
+        <select class="form-control" id="event_type" name="event_type">
+            <option value="Cultural">Cultural</option>
+            <option value="Special Session">Special Session</option>
+            <option value="Governmental">Governmental</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="event_image">Event Image</label>
+        <input type="file" class="form-control" id="event_image" name="event_image" accept="image/*">
+    </div>
+    <button type="submit" name="create_event" class="btn btn-primary">Create Event</button>
+</form>
+
+                    <!-- Show message if any -->
+                    <?php if ($message): ?>
+                        <div class="alert alert-info"><?php echo htmlspecialchars($message); ?></div>
+                    <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+   <!-- jQuery -->
+   <script src="../prod/vendors/jquery/dist/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="../prod/vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- FastClick -->
+    <script src="../prod/vendors/fastclick/lib/fastclick.js"></script>
+    <!-- NProgress -->
+    <script src="../prod/vendors/nprogress/nprogress.js"></script>
+    <!-- Chart.js -->
+    <script src="../prod/vendors/Chart.js/dist/Chart.min.js"></script>
+    <!-- gauge.js -->
+    <script src="../prod/vendors/gauge.js/dist/gauge.min.js"></script>
+    <!-- bootstrap-progressbar -->
+    <script src="../prod/vendors/bootstrap-progressbar/bootstrap-progressbar.min.js"></script>
+    <!-- iCheck -->
+    <script src="../prod/vendors/iCheck/icheck.min.js"></script>
+    <!-- Skycons -->
+    <script src="../prod/vendors/skycons/skycons.js"></script>
+    <!-- Flot -->
+    <script src="../prod/vendors/Flot/jquery.flot.js"></script>
+    <script src="../prod/vendors/Flot/jquery.flot.pie.js"></script>
+    <script src="../prod/vendors/Flot/jquery.flot.time.js"></script>
+    <script src="../prod/vendors/Flot/jquery.flot.stack.js"></script>
+    <script src="../prod/vendors/Flot/jquery.flot.resize.js"></script>
+    <!-- Flot plugins -->
+    <script src="../prod/vendors/flot.orderbars/js/jquery.flot.orderBars.js"></script>
+    <script src="../prod/vendors/flot-spline/js/jquery.flot.spline.min.js"></script>
+    <script src="../prod/vendors/flot.curvedlines/curvedLines.js"></script>
+    <!-- DateJS -->
+    <script src="../prod/vendors/DateJS/build/date.js"></script>
+    <!-- JQVMap -->
+    <script src="../prod/vendors/jqvmap/dist/jquery.vmap.js"></script>
+    <script src="../prod/vendors/jqvmap/dist/maps/jquery.vmap.world.js"></script>
+    <script src="../prod/vendors/jqvmap/examples/js/jquery.vmap.sampledata.js"></script>
+    <!-- bootstrap-daterangepicker -->
+    <script src="../prod/vendors/moment/min/moment.min.js"></script>
+    <script src="../prod/vendors/bootstrap-daterangepicker/daterangepicker.js"></script>
+
+    <!-- Custom Theme Scripts -->
+    <script src="../prod/build/js/custom.min.js"></script>
 
 <!-- jQuery -->
 <script src="../prod/vendors/jquery/dist/jquery.min.js"></script>
@@ -304,22 +386,48 @@ try {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.2.0/fullcalendar.min.js"></script>
 <script>
-    $(document).ready(function() {
-        $('#calendar').fullCalendar({
-            events: [
-                <?php foreach ($events as $event): ?>
-                    {
-                        title: '<?php echo htmlspecialchars($event['name']); ?>',
-                        start: '<?php echo htmlspecialchars($event['date']); ?>',
-                        description: '<?php echo htmlspecialchars($event['event_type']); ?>'
-                    },
-                <?php endforeach; ?>
-            ],
-            eventClick: function(event) {
-                alert('Event: ' + event.title + '\n' + event.description);
+   $(document).ready(function () {
+    $('#calendar').fullCalendar({
+        events: <?php echo json_encode($events); ?>,  // Ensure the format matches
+        height: 'auto',  // Use auto height or set a fixed value
+        header: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'month,agendaWeek,agendaDay'
+        },
+        eventClick: function (event) {
+            $('#eventModalDetails .modal-title').text(event.title);
+            
+            // Format the date to remove time
+            var eventDate = new Date(event.start);
+            var formattedDate = eventDate.toLocaleDateString('en-GB');  // You can adjust this for your locale if needed
+
+            $('#eventModalDetails .event-date').text(formattedDate);  // Display the formatted date
+            $('#eventModalDetails .event-type').text(event.event_type);
+
+            // Display the event image if available
+            if (event.image_path) {
+                // Prepend '../' to the image path if necessary (relative to the current script)
+                var imagePath = '../' + event.image_path;
+                $('#eventModalDetails .event-image').attr('src', imagePath).show();
+            } else {
+                $('#eventModalDetails .event-image').hide();
             }
-        });
+
+            $('#eventModalDetails').modal('show');
+        },
     });
+
+    // Initialize the datepicker
+    $('#event_date').datepicker({
+        format: 'yyyy-mm-dd',
+        startDate: '0d',
+        autoclose: true
+    });
+});
 </script>
+
+
+
 </body>
 </html>

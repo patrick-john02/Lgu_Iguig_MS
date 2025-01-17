@@ -9,46 +9,44 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] !== 1) {
 
 include('../config/config.php');
 
-// Handle archiving of submitted resolutions via POST request
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get the document IDs from the POST request (AJAX)
-    $documentIds = json_decode($_POST['document_ids'], true);
+  // Get the document IDs from the POST request (AJAX)
+  $documentIds = json_decode($_POST['document_ids'], true);
 
-    if (!empty($documentIds)) {
-        try {
-            // Prepare the SQL query to update the is_archived field to 1
-            $placeholders = implode(',', array_fill(0, count($documentIds), '?'));
-            $query = "UPDATE document SET is_archived = 1 WHERE document_id IN ($placeholders)";
-            
-            $stmt = $pdo->prepare($query);
-            $stmt->execute($documentIds);
+  if (!empty($documentIds)) {
+      try {
+          // Prepare the SQL query to update the is_archived field to 1
+          // Since document_id is varchar, ensure we handle it as a string in the query
+          $placeholders = implode(',', array_fill(0, count($documentIds), '?'));
+          $query = "UPDATE document SET is_archived = 0 WHERE document_id IN ($placeholders)";
+          
+          $stmt = $pdo->prepare($query);
+          $stmt->execute($documentIds);  // Execute the query with the actual document IDs
 
-            echo "Submitted resolutions archived successfully!";
-        } catch (PDOException $e) {
-            echo "Error archiving resolutions: " . $e->getMessage();
-        }
-    } else {
-        echo "No document IDs provided.";
-    }
-    exit;
+          echo "Resolutions Restored successfully!";
+      } catch (PDOException $e) {
+          echo "Error Restoring resolutions: " . $e->getMessage();
+      }
+  } else {
+      echo "No document IDs provided.";
+  }
+  exit; // Ensure that the script stops after archiving is done
 }
 
-// Fetch all non-archived, non-approved, and non-rejected resolutions
+// Fetch all the non-archived resolutions (GET request)
 try {
     $query = "
-        SELECT 
-            d.document_id AS document_id, 
-            d.title AS resolution_title,
-            d.date AS resolution_date,
-            d.subject AS resolution_subject,
-            CONCAT(u.first_name, ' ', u.last_name) AS author_name
-        FROM document d
-        LEFT JOIN users u ON d.authored_by = u.user_id
-        WHERE d.document_type = 'Resolution'
-          AND d.is_archived = 0  -- Exclude archived resolutions
-          AND d.is_approved = 0  -- Exclude approved resolutions
-          AND d.is_rejected = 0  -- Exclude rejected resolutions
-        ORDER BY d.date DESC
+    SELECT 
+        d.document_id AS document_id, 
+        d.title AS resolution_title,
+        d.date AS resolution_date,
+        d.subject AS resolution_subject,
+        CONCAT(u.first_name, ' ', u.last_name) AS author_name
+    FROM document d
+    LEFT JOIN users u ON d.authored_by = u.user_id
+    WHERE d.document_type = 'Resolution'
+    AND d.is_archived != 0  -- Exclude archived resolutions
+    ORDER BY d.date DESC
     ";
 
     $stmt = $pdo->prepare($query);
@@ -60,7 +58,6 @@ try {
     exit;
 }
 ?>
-
 
 
 <!DOCTYPE html>
@@ -246,13 +243,13 @@ try {
             <?php endforeach; ?>
         <?php else: ?>
             <tr>
-                <td colspan="6" class="text-center">No submitted resolutions found.</td>
+                <td colspan="6" class="text-center">No resolutions found.</td>
             </tr>
         <?php endif; ?>
     </tbody>
 </table>
 
-<button id="archiveButton" class="btn btn-danger">Archive</button>
+<button id="archiveButton" class="btn btn-success">Restore</button>
 
 </div>
               </div>
@@ -362,7 +359,7 @@ document.getElementById('archiveButton').addEventListener('click', function() {
         console.log("Selected Resolutions to Archive: ", selectedIds); // Debugging
 
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'submitted_resolution.php', true);
+        xhr.open('POST', 'archive_resolutions.php', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.onload = function() {
             if (xhr.status === 200) {

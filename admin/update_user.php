@@ -2,55 +2,68 @@
 session_start();
 include('../config/config.php');
 
-// Check if the user is logged in and has appropriate permissions (optional)
+// Check if the user is logged in
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Retrieve the user ID from the form
+    // Retrieve the user ID
     $user_id = $_POST['user_id'];
 
-    // Collect the form data
-    $username = $_POST['username'];
-    $email = $_POST['email'];
-    $first_name = $_POST['first_name'];
-    $last_name = $_POST['last_name'];
-    $position_id = $_POST['position_id'];
-    $status = $_POST['status'];
+    // Collect and filter the provided fields
+    $fields = [];
+    $params = [':user_id' => $user_id];
 
-    // Validate input data if needed
-    if (empty($username) || empty($email) || empty($first_name) || empty($last_name) || empty($position_id) || empty($status)) {
-        echo "All fields are required.";
+    if (!empty($_POST['username'])) {
+        $fields[] = "username = :username";
+        $params[':username'] = $_POST['username'];
+    }
+    if (!empty($_POST['email'])) {
+        $fields[] = "email = :email";
+        $params[':email'] = $_POST['email'];
+    }
+    if (!empty($_POST['first_name'])) {
+        $fields[] = "first_name = :first_name";
+        $params[':first_name'] = $_POST['first_name'];
+    }
+    if (!empty($_POST['last_name'])) {
+        $fields[] = "last_name = :last_name";
+        $params[':last_name'] = $_POST['last_name'];
+    }
+    if (!empty($_POST['position_id'])) {
+        $fields[] = "position_id = :position_id";
+        $params[':position_id'] = $_POST['position_id'];
+    }
+    if (!empty($_POST['status'])) {
+        $fields[] = "status = :status";
+        $params[':status'] = $_POST['status'];
+    }
+
+    // If no fields are provided, return an error
+    if (empty($fields)) {
+        $_SESSION['error_message'] = "No fields to update.";
+        header("Location: /admin/manage_users.php");
         exit;
     }
 
+    // Build dynamic SQL query
+    $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE user_id = :user_id";
+
     try {
-        // Update the user details in the database
-        $sql = "UPDATE users
-                SET username = :username, email = :email, first_name = :first_name, last_name = :last_name, position_id = :position_id, status = :status
-                WHERE user_id = :user_id";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            ':username' => $username,
-            ':email' => $email,
-            ':first_name' => $first_name,
-            ':last_name' => $last_name,
-            ':position_id' => $position_id,
-            ':status' => $status,
-            ':user_id' => $user_id
-        ]);
+        $stmt->execute($params);
 
-        // Set the success message in the session
+        // Success message
         $_SESSION['success_message'] = "User updated successfully!";
-
-        // Redirect back to manage_user.php
-        header("Location: http://localhost/DMS_Iguig/admin/manage_users.php");
+        header("Location: /admin/manage_users.php");
         exit;
     } catch (PDOException $e) {
-        echo "Error updating user: " . $e->getMessage();
+        $_SESSION['error_message'] = "Error updating user: " . $e->getMessage();
+        header("Location: /admin/manage_users.php");
         exit;
     }
 }
+
 ?>

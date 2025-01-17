@@ -102,7 +102,7 @@
         </div><!-- End Carousel Item -->
 
         <div class="carousel-item">
-          <img src="prod/assets/img/2.jpg" alt="">
+          <img src="prod/assets/img/hero-carousel/2.jpg" alt="">
           <div class="container">
             <h2>Official Website of LGU Iguig</h2>
             <!-- <p>Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut.</p> -->
@@ -110,6 +110,7 @@
           </div>
         </div><!-- End Carousel Item -->
 
+        
         <div class="carousel-item">
           <img src="prod/assets/img/3.jpg" alt="">
           <div class="container">
@@ -118,6 +119,25 @@
             <a href="about.html" class="btn-get-started">Read More</a>
           </div>
         </div><!-- End Carousel Item -->
+
+        <div class="carousel-item">
+          <img src="prod/assets/img/hero-carousel/4.jpg" alt="">
+          <div class="container">
+            <h2>Official Website of LGU Iguig</h2>
+            <!-- <p>Beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt omnis iste natus error sit voluptatem accusantium.</p> -->
+            <a href="about.html" class="btn-get-started">Read More</a>
+          </div>
+        </div><!-- End Carousel Item -->
+
+        <div class="carousel-item">
+          <img src="prod/assets/img/hero-carousel/2.png" alt="">
+          <div class="container">
+            <h2>Official Website of LGU Iguig</h2>
+            <!-- <p>Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut.</p> -->
+            <a href="about.html" class="btn-get-started">Read More</a>
+          </div>
+        </div><!-- End Carousel Item -->
+
         <a class="carousel-control-prev" href="#hero-carousel" role="button" data-bs-slide="prev">
           <span class="carousel-control-prev-icon bi bi-chevron-left" aria-hidden="true"></span>
         </a>
@@ -265,6 +285,11 @@ if (isset($_SESSION['error_message'])) {
             <p>Cagayan Valley</p>
             <p class="mt-3"><strong>Phone:</strong> <span>+639090909090</span></p>
             <p><strong>Email:</strong> <span>iguig@gmail.com</span></p>
+            <P>IguiG Rescue 517: 0906-672-0451
+<p>PNP: 0906-840-7329</p>
+<p>BFP: 0965-264-5143</p>
+<p>MHO: 0653-282-2567</p>
+<p>MDRRMO: 0945-506-1438</P>
           </div>
           <div class="social-links d-flex mt-4">
             <a href="https://www.facebook.com/profile.php?id=100066604785144"><i class="bi bi-facebook"></i></a>

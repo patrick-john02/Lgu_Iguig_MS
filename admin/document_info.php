@@ -15,6 +15,18 @@ if (!$document_id) {
     exit;
 }
 
+$options = [
+    'Pending',
+    'First Reading',
+    'Second Reading',
+    'Third Reading',
+    'Committee Review',
+    'For Approval',
+    'Approved',
+    'Rejected'
+];
+
+
 // Fetch document details, including the latest status from documenttimeline
 $query = "
     SELECT 
@@ -277,24 +289,44 @@ $timeline = $timeline_stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <br />
                                 <form method="POST" action="update_status.php"> 
     <input type="hidden" name="document_id" value="<?php echo htmlspecialchars($document_id); ?>">
-    <select class="form-control" name="status">
+
+    <?php
+    // Define the valid transitions for each status
+    $valid_transitions = [
+        'Pending' => ['First Reading', 'Rejected'],
+        'First Reading' => ['Second Reading', 'Rejected'],
+        'Second Reading' => ['Third Reading', 'Rejected'],
+        'Third Reading' => ['Committee Review', 'Rejected'],
+        'Committee Review' => ['For Approval', 'Rejected'],
+        'For Approval' => ['Approved', 'Rejected'],
+        'Approved' => [] // No transitions from Approved
+    ];
+
+    // Get the valid options for the current status
+    $current_status = $document['status'];
+    $available_options = $valid_transitions[$current_status] ?? [];
+    ?>
+
+    <select class="form-control" name="status" required>
         <option value="" disabled selected>--STATUS--</option>
-        <?php foreach ($options as $status): ?>
-        <option value="<?php echo $status; ?>" <?php echo ($document['status'] == $status) ? 'selected' : ''; ?>>
-            <?php echo $status; ?>
-        </option>
+        <?php foreach ($available_options as $status): ?>
+            <option value="<?php echo $status; ?>" <?php echo ($current_status == $status) ? 'selected' : ''; ?>>
+                <?php echo $status; ?>
+            </option>
         <?php endforeach; ?>
     </select>
     <br>
-    <textarea class="form-control" name="action_reason" rows="4" placeholder="Enter action reason (optional)"></textarea>
+
+    <textarea class="form-control" name="action_reason" rows="4" placeholder="Comment (optional)"></textarea>
     <br>
-    
+
     <?php
-        // Disable the button if the status is 'Approved' or 'Rejected'
-        $disabled = ($document['status'] == 'Approved' || $document['status'] == 'Rejected') ? 'disabled' : '';
+    // Disable the button and change its class based on the status
+    $button_disabled = ($current_status == 'Approved' || $current_status == 'Rejected') ? 'disabled' : '';
+    $button_class = ($current_status == 'Approved') ? 'btn btn-success' : 'btn btn-primary';
     ?>
-    
-    <button type="submit" class="btn btn-primary" <?php echo $disabled; ?>>Update Status</button>
+
+    <button type="submit" class="<?php echo $button_class; ?>" <?php echo $button_disabled; ?>>Update Status</button>
 </form>
 
                             </div>
