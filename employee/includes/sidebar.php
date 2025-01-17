@@ -32,6 +32,7 @@ try {
 ?>
 
 
+
 <div class="navbar nav_title" style="border: 0;">
     <a href="employee_dashboard.php" class="site_title"><span>LGU Iguig </span></a>
 </div>

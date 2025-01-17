@@ -1,5 +1,5 @@
 <?php
-include ('config/config.php');
+include('config/config.php');
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -26,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Hash password using SHA256 for security
-    $hashed_password = hash('sha256', $password);
+    // Hash password securely with bcrypt
+    $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
     // Insert new user into the database
     $stmt = $pdo->prepare("INSERT INTO users (first_name, last_name, username, email, password, role_id) 

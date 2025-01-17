@@ -29,13 +29,6 @@
   <!-- Main CSS File -->
   <link href="prod/assets/css/main.css" rel="stylesheet">
 
-  <!-- =======================================================
-  * Template Name: Company
-  * Template URL: https://bootstrapmade.com/company-free-html-bootstrap-template/
-  * Updated: Aug 07 2024 with Bootstrap v5.3.3
-  * Author: BootstrapMade.com
-  * License: https://bootstrapmade.com/license/
-  ======================================================== -->
 </head>
 
 <body class="index-page">
@@ -195,7 +188,7 @@ if (isset($_SESSION['error_message'])) {
 
                 <form id="loginForm" method="POST" action="login.php">
                     <div class="form-group">
-                        <label for="username">Username or Email:</label>
+                        <label for="username">Username</label>
                         <input type="text" class="form-control" id="username" name="username" required>
                     </div>
                     <div class="form-group">
@@ -218,7 +211,6 @@ if (isset($_SESSION['error_message'])) {
         </div>
     </div>
 </div>
-
 
 
 <!-- Modal for Register -->
@@ -267,10 +259,6 @@ if (isset($_SESSION['error_message'])) {
     </div>
   </div>
 </div>
-
-
-
-  
 
   </main>
   <footer id="footer" class="footer dark-background">

@@ -15,16 +15,23 @@ try {
         }
 
         // Query to fetch user details
-        $stmt = $pdo->prepare("SELECT u.user_id, u.password, u.role_id, r.role_name 
+        $stmt = $pdo->prepare("SELECT u.user_id, u.password, u.role_id, r.role_name, u.status 
                                FROM users u 
                                JOIN roles r ON u.role_id = r.role_id 
-                               WHERE (u.username = :username_or_email OR u.email = :username_or_email) 
-                               AND r.role_name = 'Employee' 
-                               AND u.status = 'active'");
+                               WHERE (u.username = :username_or_email OR u.email = :username_or_email)");
         $stmt->execute(['username_or_email' => $username_or_email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user) {
+            // Check user status
+            if ($user['status'] === 'inactive') {
+                throw new Exception("Your account is inactive. Please contact support for assistance.");
+            }
+
+            if ($user['status'] === 'suspended') {
+                throw new Exception("Your account has been suspended. Please contact support.");
+            }
+
             $stored_password = $user['password'];
 
             // Check if the password is hashed using bcrypt
@@ -66,9 +73,11 @@ try {
         }
     }
 } catch (Exception $e) {
-    // Store error message in session and redirect to the login page
-    $_SESSION['error_message'] = $e->getMessage();
-    header("Location: landing_page.php");
+    // Store error message in session and display it as an alert on the landing page
+    echo "<script>
+            alert('{$e->getMessage()}');
+            window.location.href = 'landing_page.php';
+          </script>";
     exit();
 }
 ?>

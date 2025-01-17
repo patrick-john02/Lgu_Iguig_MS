@@ -10,7 +10,15 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+try {
+  $stmt = $pdo->query("SELECT name AS title, date AS start, event_type, image_path FROM `event` WHERE is_archived = FALSE");
+  $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+  $events = [];
+  $error_message = "Error fetching events: " . $e->getMessage();
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -22,17 +30,29 @@ $user_id = $_SESSION['user_id'];
 
     <title>Employee Dashboard</title>
 
-    <!-- Bootstrap -->
-    <link href="../prod/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+     <!-- FullCalendar CSS -->
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css">
+
+
+ <!-- Bootstrap -->
+ <link href="../prod/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link href="../prod/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
     <!-- NProgress -->
     <link href="../prod/vendors/nprogress/nprogress.css" rel="stylesheet">
+    <!-- iCheck -->
+    <link href="../prod/vendors/iCheck/skins/flat/green.css" rel="stylesheet">
+	
+    <!-- bootstrap-progressbar -->
+    <link href="../prod/vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css" rel="stylesheet">
+    <!-- JQVMap -->
+    <link href="../prod/vendors/jqvmap/dist/jqvmap.min.css" rel="stylesheet"/>
     <!-- bootstrap-daterangepicker -->
     <link href="../prod/vendors/bootstrap-daterangepicker/daterangepicker.css" rel="stylesheet">
 
     <!-- Custom Theme Style -->
     <link href="../prod/build/css/custom.min.css" rel="stylesheet">
+<head>
 
     <style>
       .nav_title {
@@ -205,94 +225,28 @@ $user_id = $_SESSION['user_id'];
   </div>
 </div>
 
-
-
-<!-- Carousel Section -->
-<div id="overviewCarousel" class="carousel slide mt-1" data-ride="carousel" style="max-width: 95%; margin: auto;">
-  <div class="carousel-inner">
-  <h1 style="text-align: center;">Events and Announcement</h1>
-
-    <?php
-    // Fetch carousel content
-    $carouselQuery = "SELECT image, caption, link FROM CarouselContent ORDER BY created_at DESC";
-    $carouselStmt = $pdo->query($carouselQuery);
-    $isActive = true;
-
-    while ($carouselRow = $carouselStmt->fetch(PDO::FETCH_ASSOC)) {
-        $activeClass = $isActive ? 'active' : '';
-        $isActive = false; // Only the first item is active
-        echo "
-        <div class='carousel-item {$activeClass}' style='height: 800px; overflow: hidden;'>
-
-          <!-- Image with clickable functionality -->
-          <img class='d-block w-100' src='{$carouselRow['image']}' alt='Carousel Image' style='height: 100%; object-fit: cover;' data-toggle='modal' data-target='#carouselModal' data-image='{$carouselRow['image']}'>
-
-          <!-- Caption with semi-transparent background -->
-          
-          <div class='carousel-caption d-none d-md-block'>
-            <h5>{$carouselRow['caption']}</h5>
-            <a href='{$carouselRow['link']}' class='btn btn-primary'>Learn More</a>
-          </div>
-        </div>";
-    }
-    ?>
-  </div>
-
-  <!-- Carousel Controls -->
-  <a class="carousel-control-prev" href="#overviewCarousel" role="button" data-slide="prev">
-    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="sr-only">Previous</span>
-  </a>
-  <a class="carousel-control-next" href="#overviewCarousel" role="button" data-slide="next">
-    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="sr-only">Next</span>
-  </a>
-</div>
-
-<!-- Modal for Image Display -->
-<div class="modal fade" id="carouselModal" tabindex="-1" role="dialog" aria-labelledby="carouselModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="carouselModalLabel">Image</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <img id="modalImage" src="" alt="Modal Image" class="w-100">
-      </div>
+<div class="container-fluid">
+        <div class="row">
+            <!-- Calendar Section -->
+            <div class="col-md-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>Event Calendar</h2>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <!-- Calendar Container -->
+                        <div id="calendar"></div>
+                        <?php if (isset($error_message)): ?>
+                            <div class="alert alert-danger mt-3">
+                                <?php echo htmlspecialchars($error_message); ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
-
-<!-- Additional CSS -->
-<style>
-  .carousel-item {
-    position: relative;
-    padding: 50px;
-  }
-
-  .carousel-item img {
-    cursor: pointer; /* Indicates the image is clickable */
-  }
-
-  /* Semi-transparent dark background for the caption */
-  .carousel-caption {
-    background-color: rgba(0, 0, 0, 0.5); /* Black background with 50% opacity */
-    color: white; /* White text for contrast */
-    padding: 20px; /* Add padding for the caption text */
-  }
-
-  /* Optional: Ensure the image inside the modal is responsive */
-  #modalImage {
-    width: 100%;
-    height: auto;
-  }
-</style>
-
-
- 
             </div>
           </div>
         </div>
@@ -307,43 +261,60 @@ $user_id = $_SESSION['user_id'];
       </div>
     </div>
 
-    <!-- jQuery -->
-    <script src="../prod/vendors/jquery/dist/jquery.min.js"></script>
-    <!-- Bootstrap -->
-   <script src="../prod/vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- FastClick -->
-    <script src="../prod/vendors/fastclick/lib/fastclick.js"></script>
-    <!-- NProgress -->
-    <script src="../prod/vendors/nprogress/nprogress.js"></script>
-    <!-- Chart.js -->
-    <script src="../prod/vendors/Chart.js/dist/Chart.min.js"></script>
-    <!-- jQuery Sparklines -->
-    <script src="../prod/vendors/jquery-sparkline/dist/jquery.sparkline.min.js"></script>
-    <!-- Flot -->
-    <script src="../prod/vendors/Flot/jquery.flot.js"></script>
-    <script src="../prod/vendors/Flot/jquery.flot.pie.js"></script>
-    <script src="../prod/vendors/Flot/jquery.flot.time.js"></script>
-    <script src="../prod/vendors/Flot/jquery.flot.stack.js"></script>
-    <script src="../prod/vendors/Flot/jquery.flot.resize.js"></script>
-    <!-- Flot plugins -->
-    <script src="../prod/vendors/flot.orderbars/js/jquery.flot.orderBars.js"></script>
-    <script src="../prod/vendors/flot-spline/js/jquery.flot.spline.min.js"></script>
-    <script src="../prod/vendors/flot.curvedlines/curvedLines.js"></script>
-    <!-- DateJS -->
-    <script src="../prod/vendors/DateJS/build/date.js"></script>
-    <!-- bootstrap-daterangepicker -->
-    <script src="../prod/vendors/moment/min/moment.min.js"></script>
-    <script src="../prod/vendors/bootstrap-daterangepicker/daterangepicker.js"></script>
-    
-    <!-- Custom Theme Scripts -->
-    <script src="../prod/build/js/custom.min.js"></script>
-<!-- JavaScript to Change Modal Image -->
+ <!-- Required Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- FullCalendar -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
+
+
+
     <script>
-  // When an image is clicked, change the src of the modal image
-  $('#overviewCarousel').on('click', 'img', function() {
-    var imageSrc = $(this).data('image');
-    $('#modalImage').attr('src', imageSrc);
-  });
-</script>
-  </body>
+        $(document).ready(function () {
+            // Ensure events are in a valid JSON format
+            var events = <?php echo isset($events) ? json_encode($events) : '[]'; ?>;
+
+            // Initialize FullCalendar
+            $('#calendar').fullCalendar({
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'month,agendaWeek,agendaDay'
+                },
+                events: events,
+                height: 'auto',
+                eventClick: function (event) {
+                    // Modal to display event details
+                    let details = `
+                        <div class="modal fade" id="eventDetailsModal" tabindex="-1" role="dialog">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">${event.title}</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p><strong>Date:</strong> ${moment(event.start).format('MMMM DD, YYYY')}</p>
+                                        <p><strong>Type:</strong> ${event.event_type || 'N/A'}</p>
+                                        ${event.image_path ? `<img src="../${event.image_path}" class="img-fluid" alt="Event Image">` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    $('body').append(details);
+                    $('#eventDetailsModal').modal('show');
+                    $('#eventDetailsModal').on('hidden.bs.modal', function () {
+                        $(this).remove();
+                    });
+                }
+            });
+        });
+    </script>
+</body>
 </html>

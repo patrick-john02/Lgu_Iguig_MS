@@ -284,11 +284,7 @@ try {
         </div>
     </div>
 </div>
-
-     
-                
-                
-                
+           
    <!-- Modal for creating event -->
    <div id="eventModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document">
