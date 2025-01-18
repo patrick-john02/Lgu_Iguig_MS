@@ -34,7 +34,7 @@ try {
     $last_name = htmlspecialchars($user['last_name']);
     $username = htmlspecialchars($user['username']);
     $email = htmlspecialchars($user['email']);
-    $profile_picture = $user['profile_picture'] ? $user['profile_picture'] : 'default/default.jpg'; // Default picture if none is set
+    $profile_picture = $user['profile_picture'] ? $user['profile_picture'] : './default.jpg'; // Default picture if none is set
     $role_name = htmlspecialchars($user['role_name']);
 } catch (Exception $e) {
     $_SESSION['error_message'] = $e->getMessage();
@@ -42,7 +42,6 @@ try {
     exit();
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -245,9 +244,7 @@ if (isset($_SESSION['error_message'])) {
                 </div>
                 <div class="col-md-9 col-sm-9 ">
                     <div role="tabpanel" data-example-id="togglable-tabs">
-                        <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
-                            <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">Edit Profile</a></li>
-                        </ul>
+                       
                         <div id="myTabContent" class="tab-content">
                             <div role="tabpanel" class="tab-pane active" id="tab_content1" aria-labelledby="home-tab">
                                 <div class="x_panel">

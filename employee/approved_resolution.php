@@ -1,4 +1,4 @@
-<?php 
+<?php
 include('../config/config.php');
 // Start session to get the logged-in user's ID
 session_start();
@@ -10,45 +10,45 @@ if (!$logged_in_user_id) {
     exit;
 }
 
-$query = "
-    SELECT 
-        d.document_id, 
-        d.title, 
-        d.document_type, 
-        d.date, 
-        d.subject, 
-        -- Get the latest status from the DocumentTimeline table
-        (SELECT dt.status 
-         FROM DocumentTimeline dt 
-         WHERE dt.document_id = d.document_id 
-         ORDER BY dt.status_date DESC LIMIT 1) AS timeline_status,
-        -- Get the latest status change date from DocumentTimeline
-        (SELECT dt.status_date 
-         FROM DocumentTimeline dt 
-         WHERE dt.document_id = d.document_id 
-         ORDER BY dt.status_date DESC LIMIT 1) AS timeline_date,
-        -- Get the reason for the latest status change
-        (SELECT dt.action_reason 
-         FROM DocumentTimeline dt 
-         WHERE dt.document_id = d.document_id 
-         ORDER BY dt.status_date DESC LIMIT 1) AS action_reason
-    FROM Document d
-    LEFT JOIN DocumentTimeline dt ON d.document_id = dt.document_id
-    WHERE d.authored_by = :authored_by
-    AND d.document_type = 'Resolution'  -- Filter for Resolution documents only
-    AND (SELECT dt.status 
-         FROM DocumentTimeline dt 
-         WHERE dt.document_id = d.document_id 
-         ORDER BY dt.status_date DESC LIMIT 1) = 'Approved'  -- Filter for Approved status from DocumentTimeline
-    ORDER BY dt.status_date DESC";
+try {
+    // Query to fetch approved resolutions authored by the logged-in user
+    $query = "
+        SELECT 
+            d.document_id, 
+            d.title AS resolution_title, 
+            'Resolution' AS document_type, 
+            d.date AS resolution_date, 
+            d.subject AS resolution_subject, 
+            dt.status AS resolution_status,
+            dt.status_date AS timeline_date,
+            dt.action_reason
+        FROM document d
+        LEFT JOIN (
+            SELECT 
+                document_id, 
+                status, 
+                status_date, 
+                action_reason
+            FROM documenttimeline
+            WHERE status = 'Approved' -- Only fetch approved statuses
+            ORDER BY status_date DESC
+        ) dt ON dt.document_id = d.document_id
+        WHERE d.document_type = 'Resolution'
+          AND d.is_archived = 0
+          AND d.is_approved = 1
+          AND d.authored_by = :authored_by -- Filter for resolutions authored by the logged-in user
+        ORDER BY d.date DESC";
 
-
-$stmt = $pdo->prepare($query);
-$stmt->bindValue(':authored_by', $logged_in_user_id, PDO::PARAM_INT);
-$stmt->execute();
-$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+    $stmt = $pdo->prepare($query);
+    $stmt->bindValue(':authored_by', $logged_in_user_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $resolutions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Error fetching resolutions: " . $e->getMessage();
+    exit;
+}
 ?>
+
 
 
 
@@ -231,29 +231,40 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <th>Status</th>
             <th>Last Status Change Date</th>
             <th>Action Reason</th>
+            <th>Actions</th> <!-- New column for actions -->
         </tr>
     </thead>
     <tbody>
-        <?php if (count($result) > 0): ?>
-            <?php foreach ($result as $row): ?>
+        <?php if (!empty($resolutions)): ?>
+            <?php foreach ($resolutions as $resolution): ?>
                 <tr>
-                    <td><?= htmlspecialchars($row['document_id'], ENT_QUOTES, 'UTF-8'); ?></td>
-                    <td><?= htmlspecialchars($row['title'], ENT_QUOTES, 'UTF-8'); ?></td>
-                    <td><?= htmlspecialchars($row['document_type'], ENT_QUOTES, 'UTF-8'); ?></td>
-                    <td><?= htmlspecialchars($row['date'], ENT_QUOTES, 'UTF-8'); ?></td>
-                    <td><?= htmlspecialchars($row['subject'], ENT_QUOTES, 'UTF-8'); ?></td>
-                    <td><?= htmlspecialchars($row['timeline_status'], ENT_QUOTES, 'UTF-8'); ?></td>
-                    <td><?= htmlspecialchars($row['timeline_date'], ENT_QUOTES, 'UTF-8'); ?></td>
-                    <td><?= htmlspecialchars($row['action_reason'], ENT_QUOTES, 'UTF-8'); ?></td>
+                    <td><?= htmlspecialchars($resolution['document_id'], ENT_QUOTES, 'UTF-8'); ?></td>
+                    <td><?= htmlspecialchars($resolution['resolution_title'], ENT_QUOTES, 'UTF-8'); ?></td>
+                    <td>Resolution</td>
+                    <td><?= htmlspecialchars($resolution['resolution_date'], ENT_QUOTES, 'UTF-8'); ?></td>
+                    <td><?= htmlspecialchars($resolution['resolution_subject'], ENT_QUOTES, 'UTF-8'); ?></td>
+                    <td><?= htmlspecialchars($resolution['resolution_status'], ENT_QUOTES, 'UTF-8'); ?></td>
+                    <td><?= htmlspecialchars($resolution['timeline_date'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
+                    <td><?= htmlspecialchars($resolution['action_reason'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
+                    <td>
+                        <!-- View button -->
+                        <a href="user_document_info.php?document_id=<?= htmlspecialchars($resolution['document_id'], ENT_QUOTES, 'UTF-8'); ?>" 
+                           class="btn btn-primary btn-sm">
+                            View Timeline
+                        </a>
+                    </td>
                 </tr>
             <?php endforeach; ?>
         <?php else: ?>
             <tr>
-                <td colspan="8" class="text-center">No Approved resolutions found.</td>
+                <td colspan="9" class="text-center">No Approved Resolutions Found.</td>
             </tr>
         <?php endif; ?>
     </tbody>
-</table> 
+</table>
+
+
+
                   </div>
                 </div>
                 

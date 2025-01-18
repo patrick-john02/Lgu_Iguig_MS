@@ -11,11 +11,24 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 try {
-  $stmt = $pdo->query("SELECT name AS title, date AS start, event_type, image_path FROM `event` WHERE is_archived = FALSE");
+  $stmt = $pdo->query("SELECT name AS title, date AS start, event_type, image_path FROM `event` WHERE is_archived = FALSE AND approved_by IS NOT NULL");
   $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
   $events = [];
   $error_message = "Error fetching events: " . $e->getMessage();
+}
+try {
+  // Fetch counts for each status
+  $pending_count_stmt = $pdo->query("SELECT COUNT(*) AS count FROM `document` WHERE is_archived = 0 AND is_approved = 0 AND is_rejected = 0");
+  $approved_count_stmt = $pdo->query("SELECT COUNT(*) AS count FROM `document` WHERE is_archived = 0 AND is_approved = 1");
+  $rejected_count_stmt = $pdo->query("SELECT COUNT(*) AS count FROM `document` WHERE is_archived = 0 AND is_rejected = 1");
+
+  $pending_count = $pending_count_stmt->fetchColumn();
+  $approved_count = $approved_count_stmt->fetchColumn();
+  $rejected_count = $rejected_count_stmt->fetchColumn();
+} catch (Exception $e) {
+  $pending_count = $approved_count = $rejected_count = 0;
+  $error_message = "Error fetching document counts: " . $e->getMessage();
 }
 ?>
 
@@ -166,82 +179,74 @@ try {
   <div class="container-fluid">
     <div class="row">
      <!-- Pending Box -->
-<div class="col-lg-3 col-md-6 col-sm-12 mb-4">
-  <div class="tile-stats fixed-size-box shadow-sm text-center">
-    <div class="icon-title">
-      <div class="icon mb-3">
-        <!-- Spinner icon for pending -->
-        <i class="fa fa-spinner fa-pulse fa-2x text-warning"></i>
-      </div>
-      <h3 class="text-dark">Pending</h3>
-    </div>
-    <div class="count display-4 text-success">179</div>
-    <p class="text-muted">Pending requests</p>
-  </div>
-</div>
+     <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+            <div class="tile-stats fixed-size-box shadow-sm text-center">
+                <div class="icon-title">
+                    <div class="icon mb-3">
+                        <!-- Spinner icon for pending -->
+                        <i class="fa fa-spinner fa-pulse fa-2x text-warning"></i>
+                    </div>
+                    <h3 class="text-dark">On Process</h3>
+                </div>
+                <div class="count display-4 text-warning">
+                    <?php echo htmlspecialchars($pending_count); ?>
+                </div>
+                <p class="text-muted">On Process Request</p>
+            </div>
+        </div>
 
-     <!-- Approved Box -->
-<div class="col-lg-3 col-md-6 col-sm-12 mb-4">
-  <div class="tile-stats fixed-size-box shadow-sm text-center">
-    <div class="icon-title">
-      <div class="icon mb-3">
-        <!-- Checkmark icon for approved -->
-        <i class="fa fa-check-circle fa-2x text-success"></i>
-      </div>
-      <h3 class="text-dark">Approved</h3>
-    </div>
-    <div class="count display-4 text-success">179</div>
-    <p class="text-muted">Approved requests</p>
-  </div>
-</div>
+        <!-- Approved Box -->
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+            <div class="tile-stats fixed-size-box shadow-sm text-center">
+                <div class="icon-title">
+                    <div class="icon mb-3">
+                        <!-- Checkmark icon for approved -->
+                        <i class="fa fa-check-circle fa-2x text-success"></i>
+                    </div>
+                    <h3 class="text-dark">Approved</h3>
+                </div>
+                <div class="count display-4 text-success">
+                    <?php echo htmlspecialchars($approved_count); ?>
+                </div>
+                <p class="text-muted">Approved requests</p>
+            </div>
+        </div>
 
-     <!-- Rejected Box -->
-<div class="col-lg-3 col-md-6 col-sm-12 mb-4">
-  <div class="tile-stats fixed-size-box shadow-sm text-center">
-    <div class="icon-title">
-      <div class="icon mb-3">
-        <!-- Cross icon for rejected -->
-        <i class="fa fa-times-circle fa-2x text-danger"></i>
-      </div>
-      <h3 class="text-dark">Rejected</h3>
-    </div>
-    <div class="count display-4 text-danger">179</div>
-    <p class="text-muted">Rejected requests</p>
-  </div>
-</div>
+        <!-- Rejected Box -->
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+            <div class="tile-stats fixed-size-box shadow-sm text-center">
+                <div class="icon-title">
+                    <div class="icon mb-3">
+                        <!-- Cross icon for rejected -->
+                        <i class="fa fa-times-circle fa-2x text-danger"></i>
+                    </div>
+                    <h3 class="text-dark">Rejected</h3>
+                </div>
+                <div class="count display-4 text-danger">
+                    <?php echo htmlspecialchars($rejected_count); ?>
+                </div>
+                <p class="text-muted">Rejected requests</p>
+            </div>
+        </div>
 
-      <!-- On Process Box -->
-<div class="col-lg-3 col-md-6 col-sm-12 mb-4">
-  <div class="tile-stats fixed-size-box shadow-sm text-center">
-    <div class="icon-title">
-      <div class="icon mb-3">
-        <!-- Spinner icon for On Process -->
-        <i class="fa fa-spinner fa-spin fa-2x text-warning"></i>
-      </div>
-      <h3 class="text-dark">On Process</h3>
-    </div>
-    <div class="count display-4 text-warning">179</div>
-    <p class="text-muted">Requests in process</p>
-  </div>
-</div>
 
 <div class="container-fluid">
-        <div class="row">
-            <!-- Calendar Section -->
-            <div class="col-md-12">
-                <div class="x_panel">
-                    <div class="x_title">
-                        <h2>Event Calendar</h2>
-                        <div class="clearfix"></div>
-                    </div>
-                    <div class="x_content">
-                        <!-- Calendar Container -->
-                        <div id="calendar"></div>
-                        <?php if (isset($error_message)): ?>
-                            <div class="alert alert-danger mt-3">
-                                <?php echo htmlspecialchars($error_message); ?>
-                            </div>
-                        <?php endif; ?>
+    <div class="row">
+        <!-- Calendar Section -->
+        <div class="col-md-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2>Event Calendar</h2>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <!-- Calendar Container -->
+                    <div id="calendar"></div>
+                    <?php if (isset($error_message)): ?>
+                        <div class="alert alert-danger mt-3">
+                            <?php echo htmlspecialchars($error_message); ?>
+                        </div>
+                    <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -261,6 +266,43 @@ try {
       </div>
     </div>
 
+   <!-- jQuery -->
+   <script src="../prod/vendors/jquery/dist/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="../prod/vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- FastClick -->
+    <script src="../prod/vendors/fastclick/lib/fastclick.js"></script>
+    <!-- NProgress -->
+    <script src="../prod/vendors/nprogress/nprogress.js"></script>
+
+    <script src="../prod/vendors/Chart.js/dist/Chart.min.js"></script>
+    <!-- gauge.js -->
+    <script src="../prod/vendors/gauge.js/dist/gauge.min.js"></script>
+
+    <script src="../prod/vendors/bootstrap-progressbar/bootstrap-progressbar.min.js"></script>
+    <!-- iCheck -->
+    <script src="../prod/vendors/iCheck/icheck.min.js"></script>
+
+        <!-- Skycons -->
+        <script src="../prod/vendors/skycons/skycons.js"></script>
+
+           <!-- Flot plugins -->
+    <script src="../prod/vendors/flot.orderbars/js/jquery.flot.orderBars.js"></script>
+    <script src="../prod/vendors/flot-spline/js/jquery.flot.spline.min.js"></script>
+    <script src="../prod/vendors/flot.curvedlines/curvedLines.js"></script>
+    <!-- DateJS -->
+    <script src="../prod/vendors/DateJS/build/date.js"></script>
+    <!-- JQVMap -->
+    <script src="../prod/vendors/jqvmap/dist/jquery.vmap.js"></script>
+    <script src="../prod/vendors/jqvmap/dist/maps/jquery.vmap.world.js"></script>
+    <script src="../prod/vendors/jqvmap/examples/js/jquery.vmap.sampledata.js"></script>
+    <!-- bootstrap-daterangepicker -->
+    <script src="../prod/vendors/moment/min/moment.min.js"></script>
+    <script src="../prod/vendors/bootstrap-daterangepicker/daterangepicker.js"></script>
+
+    <!-- Custom Theme Scripts -->
+    <script src="../prod/build/js/custom.min.js"></script>
+
  <!-- Required Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
@@ -270,51 +312,49 @@ try {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
 
+<script>
+    $(document).ready(function () {
+        // Ensure events are in a valid JSON format
+        var events = <?php echo isset($events) ? json_encode($events) : '[]'; ?>;
 
-
-    <script>
-        $(document).ready(function () {
-            // Ensure events are in a valid JSON format
-            var events = <?php echo isset($events) ? json_encode($events) : '[]'; ?>;
-
-            // Initialize FullCalendar
-            $('#calendar').fullCalendar({
-                header: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'month,agendaWeek,agendaDay'
-                },
-                events: events,
-                height: 'auto',
-                eventClick: function (event) {
-                    // Modal to display event details
-                    let details = `
-                        <div class="modal fade" id="eventDetailsModal" tabindex="-1" role="dialog">
-                            <div class="modal-dialog" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">${event.title}</h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <p><strong>Date:</strong> ${moment(event.start).format('MMMM DD, YYYY')}</p>
-                                        <p><strong>Type:</strong> ${event.event_type || 'N/A'}</p>
-                                        ${event.image_path ? `<img src="../${event.image_path}" class="img-fluid" alt="Event Image">` : ''}
-                                    </div>
+        // Initialize FullCalendar
+        $('#calendar').fullCalendar({
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'month,agendaWeek,agendaDay'
+            },
+            events: events,
+            height: 'auto',
+            eventClick: function (event) {
+                // Modal to display event details
+                let details = `
+                    <div class="modal fade" id="eventDetailsModal" tabindex="-1" role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">${event.title}</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p><strong>Date:</strong> ${moment(event.start).format('MMMM DD, YYYY')}</p>
+                                    <p><strong>Type:</strong> ${event.event_type || 'N/A'}</p>
+                                    ${event.image_path ? `<img src="../${event.image_path}" class="img-fluid" alt="Event Image">` : ''}
                                 </div>
                             </div>
                         </div>
-                    `;
-                    $('body').append(details);
-                    $('#eventDetailsModal').modal('show');
-                    $('#eventDetailsModal').on('hidden.bs.modal', function () {
-                        $(this).remove();
-                    });
-                }
-            });
+                    </div>
+                `;
+                $('body').append(details);
+                $('#eventDetailsModal').modal('show');
+                $('#eventDetailsModal').on('hidden.bs.modal', function () {
+                    $(this).remove();
+                });
+            }
         });
-    </script>
+    });
+</script>
 </body>
 </html>

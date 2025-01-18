@@ -90,7 +90,7 @@
           <div class="container">
             <h2>Official Website of LGU Iguig</h2>
             <!-- <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p> -->
-            <a href="about.html" class="btn-get-started">Read More</a>
+            <!-- <a href="about.html" class="btn-get-started">Read More</a> -->
           </div>
         </div><!-- End Carousel Item -->
 
@@ -99,7 +99,7 @@
           <div class="container">
             <h2>Official Website of LGU Iguig</h2>
             <!-- <p>Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut.</p> -->
-            <a href="about.html" class="btn-get-started">Read More</a>
+            <!-- <a href="about.html" class="btn-get-started">Read More</a> -->
           </div>
         </div><!-- End Carousel Item -->
 
@@ -109,7 +109,7 @@
           <div class="container">
             <h2>Official Website of LGU Iguig</h2>
             <!-- <p>Beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt omnis iste natus error sit voluptatem accusantium.</p> -->
-            <a href="about.html" class="btn-get-started">Read More</a>
+            <!-- <a href="about.html" class="btn-get-started">Read More</a> -->
           </div>
         </div><!-- End Carousel Item -->
 
@@ -118,7 +118,7 @@
           <div class="container">
             <h2>Official Website of LGU Iguig</h2>
             <!-- <p>Beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt omnis iste natus error sit voluptatem accusantium.</p> -->
-            <a href="about.html" class="btn-get-started">Read More</a>
+            <!-- <a href="about.html" class="btn-get-started">Read More</a> -->
           </div>
         </div><!-- End Carousel Item -->
 
@@ -127,7 +127,7 @@
           <div class="container">
             <h2>Official Website of LGU Iguig</h2>
             <!-- <p>Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut.</p> -->
-            <a href="about.html" class="btn-get-started">Read More</a>
+            <!-- <a href="about.html" class="btn-get-started">Read More</a> -->
           </div>
         </div><!-- End Carousel Item -->
 
@@ -169,6 +169,199 @@
     </div>
   </div>
 </section>
+
+<!-- Mission and Vision Section -->
+<section id="about" class="about section">
+  <div class="container">
+    <div class="row position-relative">
+      <div class="col-lg-12" data-aos="fade-up" data-aos-delay="100">
+        <h2 class="inner-title">Mission and Vision</h2>
+
+        <!-- Mission -->
+        <div class="our-mission">
+          <h3>Mission</h3>
+          <p>
+            Our mission is to preserve and promote the rich cultural and historical heritage of Iguig, Cagayan. By fostering a progressive and inclusive community, we aim to honor our past, empower our present, and create a sustainable future for all residents and visitors. With dedication to community development, education, and innovation, we strive to embody the spirit of progress and unity.
+          </p>
+        </div>
+
+        <!-- Vision -->
+        <div class="our-vision">
+          <h3>Vision</h3>
+          <p>
+            We envision Iguig as a thriving municipality known for its harmonious blend of history, culture, and modern achievements. As a beacon of progress in Cagayan, we aspire to inspire communities through our scenic location, rich traditions, and the exemplary contributions of our people. Our vision is to be a model for inclusivity, resilience, and sustainable growth in the region.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+ <!-- Portfolio Section -->
+ <section id="portfolio" class="portfolio section">
+
+<!-- Section Title -->
+<div class="container section-title" data-aos="fade-up">
+  <h2>Local Government Unit of Iguig Cagayan </h2>
+ 
+</div><!-- End Section Title -->
+
+<div class="container">
+
+  <div class="isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
+
+    <ul class="portfolio-filters isotope-filters" data-aos="fade-up" data-aos-delay="100">
+      <li data-filter="*" class="filter-active">All</li>
+      <li data-filter=".filter-vicemayor">VICE MAYOR</li>
+      <li data-filter=".filter-app">SANGGUNIANG BAYAN MEMBERS</li>
+      <li data-filter=".filter-product">SK FEDERATION PRESIDENT</li>
+      <li data-filter=".filter-branding">LNB PRESIDENT</li>
+     
+    </ul><!-- End Portfolio Filters -->
+
+    
+    <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="100">
+
+      <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-vicemayor">
+        <img src="prod/assets/img/masonry-portfolio/7.png" class="img-fluid" alt="">
+        <div class="portfolio-info">
+          <h6>MUNICIPAL VICE MAYOR: JUDITAS L. TRINIDAD</h6>
+          <!-- <p>Lorem ipsum, dolor sit</p> -->
+          <a href="prod/assets/img/masonry-portfolio/7.png" title="SANGGUNIANG BAYAN MEMBER: HON. CONRADO R. CALLUENG JR." data-gallery="portfolio-gallery-app" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
+          
+        </div>
+      </div><!-- End Portfolio Item -->
+
+      <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
+        <img src="prod/assets/img/masonry-portfolio/1.png" class="img-fluid" alt="">
+        <div class="portfolio-info">
+          <h5>HON. CONRADO R. CALLUENG JR</h5>
+          <!-- <p>Lorem ipsum, dolor sit</p> -->
+          <a href="prod/assets/img/masonry-portfolio/1.png" title="SANGGUNIANG BAYAN MEMBER: HON. CONRADO R. CALLUENG JR." data-gallery="portfolio-gallery-app" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
+          
+        </div>
+      </div><!-- End Portfolio Item -->
+
+      <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product">
+        <img src="prod/assets/img/masonry-portfolio/5.png" class="img-fluid" alt="">
+        <div class="portfolio-info">
+          <h5>HON. ROBERT KARL N. RUMUSUD</h5>
+        
+          <a href="prod/assets/img/masonry-portfolio/5.png" title="SK FEDERATION PRESIDENT: ROBERT KARL N. RUMUSUD" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
+         
+        </div>
+      </div><!-- End Portfolio Item -->
+
+
+
+
+      <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
+        <img src="prod/assets/img/masonry-portfolio/2.png" class="img-fluid" alt="">
+        <div class="portfolio-info">
+          <h5>HON. JULIET P. BARIZO</h5>
+          <!-- <p>Lorem ipsum, dolor sit</p> -->
+          <a href="prod/assets/img/masonry-portfolio/2.png" title="SANGGUNIANG BAYAN MEMBER: HON. JULIET P. BARIZO" data-gallery="portfolio-gallery-app" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
+          
+        </div>
+      </div><!-- End Portfolio Item -->
+
+
+
+      <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
+        <img src="prod/assets/img/masonry-portfolio/3.png" class="img-fluid" alt="">
+        <div class="portfolio-info">
+          <h5>HON. RAUL B. TRINIDAD</h5>
+          <!-- <p>Lorem ipsum, dolor sit</p> -->
+          <a href="prod/assets/img/masonry-portfolio/2.png" title="SANGGUNIANG BAYAN MEMBER: HON. RAUL B. TRINIDAD" data-gallery="portfolio-gallery-app" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
+         
+        </div>
+      </div><!-- End Portfolio Item -->
+
+      <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
+        <img src="prod/assets/img/masonry-portfolio/4.png" class="img-fluid" alt="">
+        <div class="portfolio-info">
+          <h5>HON. KARL BENJAMIN C. PASCUAL</h5>
+          <!-- <p>Lorem ipsum, dolor sit</p> -->
+          <a href="prod/assets/img/masonry-portfolio/4.png" title="SANGGUNIANG BAYAN MEMBER: HON. KARL BENJAMIN C. PASCUAL" data-gallery="portfolio-gallery-app" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
+          
+        </div>
+      </div><!-- End Portfolio Item -->
+
+      <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
+        <img src="prod/assets/img/masonry-portfolio/6.png" class="img-fluid" alt="">
+        <div class="portfolio-info">
+          <h5>HON. VENTURA D. ZINAMPAN</h5>
+          <!-- <p>Lorem ipsum, dolor sit</p> -->
+          <a href="prod/assets/img/masonry-portfolio/6.png" title="SANGGUNIANG BAYAN MEMBER: HON. VENTURA D. ZINAMPAN" data-gallery="portfolio-gallery-app" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
+         
+        </div>
+      </div><!-- End Portfolio Item -->
+
+      <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
+        <img src="prod/assets/img/masonry-portfolio/8.png" class="img-fluid" alt="">
+        <div class="portfolio-info">
+          <h5>HON. MA. RIZA LYN C. FELIX</h5>
+          <!-- <p>Lorem ipsum, dolor sit</p> -->
+          <a href="prod/assets/img/masonry-portfolio/8.png" title="SANGGUNIANG BAYAN MEMBER: HON. MA. RIZA LYN C. FELIX" data-gallery="portfolio-gallery-app" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
+         
+        </div>
+      </div><!-- End Portfolio Item -->
+
+      <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
+        <img src="prod/assets/img/masonry-portfolio/9.png" class="img-fluid" alt="">
+        <div class="portfolio-info">
+          <h5>HON. JESICA B. CALUCAG</h5>
+          <!-- <p>Lorem ipsum, dolor sit</p> -->
+          <a href="assets/img/masonry-portfolio/9.png" title="SANGGUNIANG BAYAN MEMBER: HON. JESICA B. CALUCAG" data-gallery="portfolio-gallery-app" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
+         
+        </div>
+      </div><!-- End Portfolio Item -->
+
+      <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product">
+        <img src="prod/assets/img/masonry-portfolio/.png" class="img-fluid" alt="">
+        <div class="portfolio-info">
+          <h4>Product 1</h4>
+          <p>Lorem ipsum, dolor sit</p>
+          <a href="prod/assets/img/masonry-portfolio/masonry-portfolio-2.jpg" title="Product 1" data-gallery="portfolio-gallery-product" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
+          
+        </div>
+      </div><!-- End Portfolio Item -->
+
+
+      <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
+        <img src="prod/assets/img/masonry-portfolio/10.png" class="img-fluid" alt="">
+        <div class="portfolio-info">
+          <h6>LNB PRESIDENT: HON. RIZALINA B. OBANDO</h6>
+          
+          <a href="prod/assets/img/masonry-portfolio/10.png" title="LNB PRESIDENT: HON. RIZALINA B. OBANDO" data-gallery="portfolio-gallery-branding" class="glightbox preview-link"><i class="bi bi-zoom-in"></i></a>
+          
+        </div>
+      </div><!-- End Portfolio Item -->
+
+      
+
+    
+    
+     
+
+     
+
+     
+    </div><!-- End Portfolio Container -->
+
+  </div>
+
+</div>
+
+</section><!-- /Portfolio Section -->
+
+
+
+
+
+
 
  <!-- Login Modal -->
 <div class="modal fade" id="Login" role="dialog">

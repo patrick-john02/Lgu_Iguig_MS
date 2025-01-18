@@ -7,32 +7,32 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
+
 
 try {
-    // Fetch user details including the profile picture
-    $stmt = $pdo->prepare("SELECT first_name, last_name, profile_picture FROM users WHERE user_id = :user_id");
-    $stmt->execute(['user_id' => $user_id]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+  // Fetch user details including the profile picture
+  $stmt = $pdo->prepare("SELECT first_name, last_name, profile_picture FROM users WHERE user_id = :user_id");
+  $stmt->execute(['user_id' => $user_id]);
+  $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$user) {
-        throw new Exception("User not found. Please log in again.");
-    }
+  if (!$user) {
+      throw new Exception("User not found. Please log in again.");
+  }
 
-    // Extract the details
-    $first_name = htmlspecialchars($user['first_name']);
-    $last_name = htmlspecialchars($user['last_name']);
-    $profile_picture = htmlspecialchars($user['profile_picture']);
+  // Extract the details
+  $first_name = htmlspecialchars($user['first_name']);
+  $last_name = htmlspecialchars($user['last_name']);
+  $profile_picture = htmlspecialchars($user['profile_picture']);
 } catch (Exception $e) {
-    // Handle errors (redirect with error message)
-    $_SESSION['error_message'] = $e->getMessage();
-    header("Location: ../landing_page.php");
-    exit();
+  // Handle errors (redirect with error message)
+  $_SESSION['error_message'] = $e->getMessage();
+  header("Location: ../landing_page.php");
+  exit();
 }
 ?>
 
 <div class="navbar nav_title" style="border: 0;">
-    <a href="employee_dashboard.php" class="site_title"><span>LGU Iguig </span></a>
+    <a href="admin_dashboard.php" class="site_title"><span>LGU Iguig </span></a>
 </div>
 
             <div class="clearfix"></div>
@@ -40,10 +40,10 @@ try {
             <div class="clearfix"></div>
 
             <div class="profile clearfix">
-    <div class="profile_pic">
+            <div class="profile_pic">
         <?php 
         // Set a default profile picture if none is uploaded
-        $defaultProfilePicture = "./default/default.jpg"; // Update with the actual path
+        $defaultProfilePicture = "./default.jpg"; // Update with the actual path
         $displayPicture = !empty($profile_picture) ? $profile_picture : $defaultProfilePicture;
         ?>
         <img src="<?php echo htmlspecialchars($displayPicture); ?>" alt="Profile Picture" class="profile_img">

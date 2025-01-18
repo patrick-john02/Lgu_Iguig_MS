@@ -16,38 +16,19 @@ $query = "
         d.title, 
         d.document_type, 
         d.date, 
-        d.subject, 
-        -- Get the latest status from the DocumentTimeline table
-        (SELECT dt.status 
-         FROM DocumentTimeline dt 
-         WHERE dt.document_id = d.document_id 
-         ORDER BY dt.status_date DESC LIMIT 1) AS timeline_status,
-        -- Get the latest status change date from DocumentTimeline
-        (SELECT dt.status_date 
-         FROM DocumentTimeline dt 
-         WHERE dt.document_id = d.document_id 
-         ORDER BY dt.status_date DESC LIMIT 1) AS timeline_date,
-        -- Get the reason for the latest status change
-        (SELECT dt.action_reason 
-         FROM DocumentTimeline dt 
-         WHERE dt.document_id = d.document_id 
-         ORDER BY dt.status_date DESC LIMIT 1) AS action_reason
+        d.subject
     FROM Document d
-    LEFT JOIN DocumentTimeline dt ON d.document_id = dt.document_id
     WHERE d.authored_by = :authored_by
     AND d.document_type = 'Ordinance'  -- Filter for Ordinance documents only
-    AND (SELECT dt.status 
-         FROM DocumentTimeline dt 
-         WHERE dt.document_id = d.document_id 
-         ORDER BY dt.status_date DESC LIMIT 1) = 'Pending'  -- Filter for Pending status from DocumentTimeline
-    ORDER BY dt.status_date DESC";
-
+    AND d.is_archived = 0               -- Exclude archived documents
+    AND d.is_rejected = 0               -- Exclude rejected documents
+    AND d.is_approved = 0               -- Exclude approved documents
+    ORDER BY d.date DESC";
 
 $stmt = $pdo->prepare($query);
 $stmt->bindValue(':authored_by', $logged_in_user_id, PDO::PARAM_INT);
 $stmt->execute();
 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 ?>
 
 
@@ -187,6 +168,12 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <!-- page content -->
         <div class="right_col" role="main">
           <div class="">
+          <p>Your Submitted Ordinances</p>
+<div class="row no-print">
+    <div class="">
+        <button class="btn btn-default" onclick="printTable();"><i class="fa fa-print"></i> Print Table</button>
+    </div>
+</div>
             <div class="page-title">
               <div class="title_left">
                 <h3>Pending Ordinance Lists</h3>
@@ -227,13 +214,11 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <th>Type</th>
             <th>Date</th>
             <th>Subject</th>
-            <th>Status</th>
-            <th>Last Status Change Date</th>
-            <th>Action Reason</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
-        <?php if (count($result) > 0): ?>
+        <?php if (!empty($result)): ?>
             <?php foreach ($result as $row): ?>
                 <tr>
                     <td><?= htmlspecialchars($row['document_id'], ENT_QUOTES, 'UTF-8'); ?></td>
@@ -241,18 +226,23 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <td><?= htmlspecialchars($row['document_type'], ENT_QUOTES, 'UTF-8'); ?></td>
                     <td><?= htmlspecialchars($row['date'], ENT_QUOTES, 'UTF-8'); ?></td>
                     <td><?= htmlspecialchars($row['subject'], ENT_QUOTES, 'UTF-8'); ?></td>
-                    <td><?= htmlspecialchars($row['timeline_status'], ENT_QUOTES, 'UTF-8'); ?></td>
-                    <td><?= htmlspecialchars($row['timeline_date'], ENT_QUOTES, 'UTF-8'); ?></td>
-                    <td><?= htmlspecialchars($row['action_reason'], ENT_QUOTES, 'UTF-8'); ?></td>
+                    <td>
+                        <!-- View Timeline button -->
+                        <a href="user_document_info.php?document_id=<?= htmlspecialchars($row['document_id'], ENT_QUOTES, 'UTF-8'); ?>" 
+                           class="btn btn-primary btn-sm">
+                            View Timeline
+                        </a>
+                    </td>
                 </tr>
             <?php endforeach; ?>
         <?php else: ?>
             <tr>
-                <td colspan="8" class="text-center">No pending Ordinance found.</td>
+                <td colspan="6" class="text-center">No pending Ordinances found.</td>
             </tr>
         <?php endif; ?>
     </tbody>
-</table> 
+</table>
+
                   </div>
                 </div>
                 
@@ -270,6 +260,88 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <!-- /footer content -->
       </div>
     </div>
+
+    <script>
+    function printTable() {
+        var printWindow = window.open('', '', 'height=600,width=800');
+        var tableContent = document.querySelector('.table').outerHTML;  // Get the table HTML
+        
+        // Construct the content of the print window
+        printWindow.document.write('<html><head><title>Print Table</title>');
+        printWindow.document.write('<link href="../vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">');
+        printWindow.document.write('<style>');
+        printWindow.document.write('body { font-family: Arial, sans-serif; margin: 0; padding: 0; }');
+        printWindow.document.write('.header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; }');
+        printWindow.document.write('.header h1 { text-align: center; flex-grow: 1; margin: 0; }');
+        printWindow.document.write('.header h2, .header h5 { text-align: center; margin: 0; }');
+        printWindow.document.write('.header img { max-width: 100px; height: auto; }');
+        
+        // Style for the table to center it
+        printWindow.document.write('.table-container { display: flex; justify-content: center; margin-top: 20px; }');
+        printWindow.document.write('table { width: 80%; border-collapse: collapse; }');
+        printWindow.document.write('table, th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }');
+        
+        // Hide specific columns (1, 3, and 6)
+        printWindow.document.write('th:nth-child(1), td:nth-child(1), th:nth-child(3), td:nth-child(3), th:nth-child(6), td:nth-child(6) { display: none; }');
+        
+        printWindow.document.write('</style></head><body>');
+        
+        // Add custom header with logos and title centered
+        printWindow.document.write('<div class="header">');
+        // Left logo
+        printWindow.document.write('<img src="../prod/assets/img/lgu.jpg" alt="Left Logo">');
+        
+        // Title (Centered)
+        printWindow.document.write('<div>');
+        printWindow.document.write('<h2>Republic of the Philippines</h2>');
+        printWindow.document.write('<h5>Province of Cagayan</h5>');
+        printWindow.document.write('<h2>MUNICIPALITY OF IGUIG</h2>');
+        printWindow.document.write('<h2><strong>OFFICE OF THE SANGGUNIANG BAYAN</strong></h2>');
+        printWindow.document.write('</div>');
+        
+        // Right logo
+        printWindow.document.write('<img src="../prod/assets/img/astig.png" alt="Right Logo">');
+        printWindow.document.write('</div>');  // End header div
+        
+        // Add the table content to the print window within a container to center it
+        printWindow.document.write('<p>Below is the list of your submitted Ordinances:</p>');
+        printWindow.document.write('<div class="table-container">');
+       
+        printWindow.document.write(tableContent);
+        printWindow.document.write('</div>');  // End table-container div
+        
+        printWindow.document.write('</body></html>');
+
+        // Ensure the content is fully loaded before printing
+        printWindow.document.close();  // Close the document and open the print dialog
+        printWindow.print();
+    }
+      // Search functionality
+document.getElementById('tableSearch').addEventListener('input', function(event) {
+    var searchTerm = event.target.value.toLowerCase();
+    var rows = document.querySelectorAll('.table tbody tr');
+
+    rows.forEach(function(row) {
+        var cells = row.querySelectorAll('td');
+        var matched = false;
+
+        cells.forEach(function(cell) {
+            if (cell.textContent.toLowerCase().includes(searchTerm)) {
+                matched = true;
+            }
+        });
+
+        if (matched) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+</script>
+
+
+
     <!-- jQuery -->
     <script src="../prod/vendors/jquery/dist/jquery.min.js"></script>
     <!-- Bootstrap -->

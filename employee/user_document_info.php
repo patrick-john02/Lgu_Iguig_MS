@@ -1,9 +1,13 @@
 <?php
+include('../config/config.php');
+// Start session to get the logged-in user's ID
 session_start();
+$logged_in_user_id = $_SESSION['user_id'] ?? null;
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] !== 1) {
-    header("Location: admin_login.php");
-    exit();
+// Ensure the user is logged in
+if (!$logged_in_user_id) {
+    echo "You must be logged in to view this page.";
+    exit;
 }
 
 include('../config/config.php');
@@ -249,15 +253,16 @@ $timeline = $timeline_stmt->fetchAll(PDO::FETCH_ASSOC);
           <div class="left_col scroll-view">
 
          
-          <?php  include ('includes/admin_sidebar.php');?>
-          <?php include ('includes/admin_navbar.php');?>
+          <?php  include ('includes/sidebar.php');?>
+          <?php include ('includes/navbar.php');?>
+
          
     <!-- page content -->
 <div class="right_col" role="main">
     <div class="">
         <div class="page-title">
             <div class="title_left">
-            <a href="http://localhost/DMS_Iguig/admin/submitted_resolution.php" class="btn btn-secondary">
+            <a href="http://localhost/DMS_Iguig/employee/submitted_resolution.php" class="btn btn-secondary">
                     <i class="fa fa-arrow-left"></i> Back to List
                 </a>
                 <h3>Document Detail</h3>
@@ -266,39 +271,41 @@ $timeline = $timeline_stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
     <div class="clearfix"></div>
     <div class="row">
-        <div class="col-md-12">
-            <div class="x_panel">
-                <div class="x_title">
-                    <h2>Title <?php echo htmlspecialchars($document['title']); ?></h2>
-                    <div class="clearfix"></div>
-                </div>
+    <div class="col-md-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2>Title <?php echo htmlspecialchars($document['title']); ?></h2>
+                <div class="clearfix"></div>
+            </div>
 
-                <div class="x_content">
-                    <div class="col-md-9 col-sm-9">
-                        <br />
-                        <div>
-                            <h4>Document Timeline</h4>
-                            <ul class="messages">
-                                <?php foreach ($timeline as $entry): ?>
-                                <li>
+            <div class="x_content">
+                <div class="col-md-9 col-sm-9">
+                    <br />
+                    <div>
+                        <h4>Document Timeline</h4>
+                        <ul class="messages">
+                            <?php foreach ($timeline as $entry): ?>
+                            <li>
                                 <div class="message_date">
                                     <h3 class="date text-info"><?php echo htmlspecialchars(date('d', strtotime($entry['status_date']))); ?></h3>
                                     <p class="month"><?php echo htmlspecialchars(date('F', strtotime($entry['status_date']))); ?></p>
                                     <p class="time"><?php echo htmlspecialchars(date('h:i A', strtotime($entry['status_date']))); ?></p>
                                 </div>
-                                    <div class="message_wrapper">
-                                        <h4 class="heading"><?php echo htmlspecialchars($entry['action_by']); ?></h4>
-                                        <blockquote class="message">Comment: <?php echo htmlspecialchars($entry['action_reason']); ?></blockquote>
-                                        <p class="url">
-                                            <span class="fs1 text-info" aria-hidden="true" data-icon=""></span>
-                                            <a href="#"><i class="fa fa-paperclip"></i> <?php echo htmlspecialchars($entry['status']); ?></a>
-                                        </p>
-                                    </div>
-                                </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        </div>
+
+                                <div class="message_wrapper">
+                                    <h4 class="heading"><?php echo htmlspecialchars($entry['action_by']); ?></h4>
+                                    <blockquote class="message">Comment: <?php echo htmlspecialchars($entry['action_reason']); ?></blockquote>
+                                    <p class="url">
+                                        <span class="fs1 text-info" aria-hidden="true" data-icon=""></span>
+                                        <a href="#"><i class="fa fa-paperclip"></i> <?php echo htmlspecialchars($entry['status']); ?></a>
+                                    </p>
+                                </div>
+                            </li>
+                            <?php endforeach; ?>
+                        </ul>
                     </div>
+                </div>
+
                     <!-- Project sidebar -->
                     <div class="col-md-3 col-sm-3">
                         <section class="panel">
@@ -318,7 +325,7 @@ $timeline = $timeline_stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <li><a href="<?php echo htmlspecialchars($document['file_path']); ?>" target="_blank"><i class="fa fa-file-pdf-o"></i> View Document</a></li>
                                 </ul>
                                 <br />
-                                <form method="POST" action="update_status.php"> 
+                                <!-- <form method="POST" action="update_status.php"> 
     <input type="hidden" name="document_id" value="<?php echo htmlspecialchars($document_id); ?>">
 
     <?php
@@ -358,7 +365,7 @@ $timeline = $timeline_stmt->fetchAll(PDO::FETCH_ASSOC);
     ?>
 
     <button type="submit" class="<?php echo $button_class; ?>" <?php echo $button_disabled; ?>>Update Status</button>
-</form>
+</form> -->
 
                             </div>
                         </section>
