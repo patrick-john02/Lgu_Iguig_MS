@@ -184,7 +184,7 @@ $user_id = $_SESSION['user_id'];
                                 <div class="col-md-6 col-sm-6">
                                     <select id="document_type" name="document_type" class="form-control" required>
                                         <option value="" disabled selected>-- Select Document Type --</option>
-                                        <option value="Memorandum">Memorandum</option>
+                                       
                                         <option value="Resolution">Resolution</option>
                                         <option value="Ordinance">Ordinance</option>
                                     </select>
@@ -215,61 +215,7 @@ $user_id = $_SESSION['user_id'];
             </div>
         </div>
 
-        <div class="page-title">
-            <div class="title_left">
-                <h3>Request Event</h3>
-            </div>
-        </div>
-        <div class="clearfix"></div>
-        <div class="row">
-            <div class="col-md-12 col-sm-12 ">
-                <div class="x_panel">
-                    <div class="x_title">
-                        <h2><small>Request Event</small></h2>
-                        <ul class="nav navbar-right panel_toolbox">
-                            <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
-                        </ul>
-                        <div class="clearfix"></div>
-                    </div>
-                    <div class="x_content">
-                    <form id="request-letter-form" action="submit_request_event.php" method="POST" enctype="multipart/form-data" class="form-horizontal form-label-left">
-    <div class="item form-group">
-        <label class="col-form-label col-md-3 col-sm-3 label-align" for="title">Name<span class="required">*</span></label>
-        <div class="col-md-6 col-sm-6">
-            <input type="text" id="title" name="title" required="required" class="form-control">
-        </div>
-    </div>
-    <div class="item form-group">
-        <label class="col-form-label col-md-3 col-sm-3 label-align" for="document_type">Event Type <span class="required">*</span></label>
-        <div class="col-md-6 col-sm-6">
-            <select id="document_type" name="document_type" class="form-control" required>
-                <option value="" disabled selected>-- Select Event Type --</option>
-                <option value="Cultural">Cultural</option>
-                <option value="Special Session">Special Session</option>
-                <option value="Governmental">Governmental</option>
-            </select>
-        </div>
-    </div>
-    <div class="item form-group">
-        <label class="col-form-label col-md-3 col-sm-3 label-align" for="event_date">Event Date <span class="required">*</span></label>
-        <div class="col-md-6 col-sm-6">
-            <input type="date" id="event_date" name="event_date" required="required" class="form-control">
-        </div>
-    </div>
-    <div class="item form-group">
-        <label class="col-form-label col-md-3 col-sm-3 label-align" for="file_upload">Upload Your Document (Image)</label>
-        <div class="col-md-6 col-sm-6">
-            <input id="file_upload" name="file_upload" type="file" class="form-control" accept=".jpg,.jpeg,.png,.gif" required>
-        </div>
-    </div>
-    <div class="ln_solid"></div>
-    <div class="item form-group">
-        <div class="col-md-6 col-sm-6 offset-md-3">
-            <button class="btn btn-primary" type="reset">Reset</button>
-            <button type="submit" class="btn btn-success">Submit Request</button>
-        </div>
-    </div>
-</form>
+      
 
 
 

@@ -10,10 +10,6 @@ include('../config/config.php');
 $user_id = $_SESSION['user_id'];
 
 try {
-    //  Check if session contains user_id
-    // echo "Session User ID: " . $user_id; 
-
-    // Fetch user details from the database
     $stmt = $pdo->prepare("
         SELECT u.first_name, u.last_name, u.username, u.email, u.profile_picture, r.role_name
         FROM users u
@@ -23,18 +19,17 @@ try {
     $stmt->execute(['user_id' => $user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Check if the user data exists
     if (!$user) {
-        echo "No active user found for this ID.";  // Debugging message
-        exit();  // Prevent further execution if the user is not found
+        echo "No active user found for this ID.";
+        exit();
     }
 
-    // Extract user information
+    // Extract user details with fallback to a default profile picture
     $first_name = htmlspecialchars($user['first_name']);
     $last_name = htmlspecialchars($user['last_name']);
     $username = htmlspecialchars($user['username']);
     $email = htmlspecialchars($user['email']);
-    $profile_picture = $user['profile_picture'] ? $user['profile_picture'] : './default.jpg'; // Default picture if none is set
+    $profile_picture = !empty($user['profile_picture']) ? htmlspecialchars($user['profile_picture']) : '/prod/assets/img/default.jpg'; 
     $role_name = htmlspecialchars($user['role_name']);
 } catch (Exception $e) {
     $_SESSION['error_message'] = $e->getMessage();

@@ -7,11 +7,17 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] !== 1) {
 }
 
 include('../config/config.php');
+$user_id = $_SESSION['user_id'];
 
 // Fetch total users (admin users only)
 $stmt = $pdo->prepare("SELECT COUNT(*) AS total_users FROM users WHERE role_id = 1 AND status = 'active'");
 $stmt->execute();
 $total_users = $stmt->fetch(PDO::FETCH_ASSOC)['total_users'];
+
+// Fetch total users with role_id = 2
+$stmt = $pdo->prepare("SELECT COUNT(*) AS total_role2_users FROM users WHERE role_id = 2 AND status = 'active'");
+$stmt->execute();
+$total_role2_users = $stmt->fetch(PDO::FETCH_ASSOC)['total_role2_users'];
 
 // Fetch total events (non-archived)
 $stmt = $pdo->prepare("SELECT COUNT(*) AS total_events FROM event WHERE is_archived = 0");
@@ -77,7 +83,7 @@ $recent_documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- Custom Theme Style -->
     <link href="../prod/build/css/custom.min.css" rel="stylesheet">
-    <style>
+<style>
       .nav_title {
     display: flex;
     justify-content: center; 
@@ -184,44 +190,66 @@ $recent_documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
        <!-- page content -->
        <div class="right_col" role="main">
-       <!-- top tiles -->
-<div class="row">
+     <!-- top tiles -->
+     <div class="row">
   <div class="tile_count">
     <!-- Total Users -->
     <div class="tile_stats_count">
       <div class="tile">
-        <span class="count_top"><i class="fa fa-user"></i> Total Users</span>
+        <span class="count_top"><i class="fa fa-user"></i> Admin</span>
         <div class="count"><?= $total_users ?></div>
       </div>
     </div>
+    <!-- Total Users with Role ID = 2 -->
+    <div class="tile_stats_count">
+      <div class="tile">
+      <a href="manage_users.php" class="link">
+        <span class="count_top"><i class="fa fa-users"></i> Employee's</span>
+        <div class="count"><?= $total_role2_users ?></div>
+        </a>
+      </div>
+    </div>
+
+
     <!-- Total Events -->
     <div class="tile_stats_count">
       <div class="tile">
+      <a href="admin_events.php" class="link">
         <span class="count_top"><i class="fa fa-calendar"></i> Total Events</span>
         <div class="count"><?= $total_events ?></div>
+        </a>
       </div>
     </div>
+    
     <!-- Pending Documents -->
     <div class="tile_stats_count">
       <div class="tile">
-        <span class="count_top"><i class="fa fa-clock-o"></i> Pending</span>
-        <div class="count"><?= $pending ?></div>
+        <a href="submitted_resolution.php" class="link">
+          <span class="count_top"><i class="fa fa-clock-o"></i> Pending</span>
+          <div class="count"><?= $pending ?></div>
+        </a>
       </div>
     </div>
+    
     <!-- Approved Documents -->
     <div class="tile_stats_count">
       <div class="tile">
-        <span class="count_top"><i class="fa fa-check"></i> Approved</span>
-        <div class="count"><?= $approved ?></div>
+        <a href="approved_resolution.php" class="link">
+          <span class="count_top"><i class="fa fa-check"></i> Approved</span>
+          <div class="count"><?= $approved ?></div>
+        </a>
       </div>
     </div>
+    
     <!-- Rejected Documents -->
     <div class="tile_stats_count">
       <div class="tile">
+      <a href="rejected_resolutions.php" class="link">
         <span class="count_top"><i class="fa fa-times"></i> Rejected</span>
         <div class="count"><?= $rejected ?></div>
-      </div>
-    </div>
+        </a>
+     
+  
     
   </div>
 </div>

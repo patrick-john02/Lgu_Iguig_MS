@@ -266,49 +266,13 @@ try {
       </div>
     </div>
 
-   <!-- jQuery -->
-   <script src="../prod/vendors/jquery/dist/jquery.min.js"></script>
-    <!-- Bootstrap -->
-    <script src="../prod/vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- FastClick -->
-    <script src="../prod/vendors/fastclick/lib/fastclick.js"></script>
-    <!-- NProgress -->
-    <script src="../prod/vendors/nprogress/nprogress.js"></script>
+<!-- jQuery (already included earlier) -->
+<script src="../prod/vendors/jquery/dist/jquery.min.js"></script>
 
-    <script src="../prod/vendors/Chart.js/dist/Chart.min.js"></script>
-    <!-- gauge.js -->
-    <script src="../prod/vendors/gauge.js/dist/gauge.min.js"></script>
+<!-- Bootstrap (already included earlier) -->
+<script src="../prod/vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script src="../prod/vendors/bootstrap-progressbar/bootstrap-progressbar.min.js"></script>
-    <!-- iCheck -->
-    <script src="../prod/vendors/iCheck/icheck.min.js"></script>
-
-        <!-- Skycons -->
-        <script src="../prod/vendors/skycons/skycons.js"></script>
-
-           <!-- Flot plugins -->
-    <script src="../prod/vendors/flot.orderbars/js/jquery.flot.orderBars.js"></script>
-    <script src="../prod/vendors/flot-spline/js/jquery.flot.spline.min.js"></script>
-    <script src="../prod/vendors/flot.curvedlines/curvedLines.js"></script>
-    <!-- DateJS -->
-    <script src="../prod/vendors/DateJS/build/date.js"></script>
-    <!-- JQVMap -->
-    <script src="../prod/vendors/jqvmap/dist/jquery.vmap.js"></script>
-    <script src="../prod/vendors/jqvmap/dist/maps/jquery.vmap.world.js"></script>
-    <script src="../prod/vendors/jqvmap/examples/js/jquery.vmap.sampledata.js"></script>
-    <!-- bootstrap-daterangepicker -->
-    <script src="../prod/vendors/moment/min/moment.min.js"></script>
-    <script src="../prod/vendors/bootstrap-daterangepicker/daterangepicker.js"></script>
-
-    <!-- Custom Theme Scripts -->
-    <script src="../prod/build/js/custom.min.js"></script>
-
- <!-- Required Scripts -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-<!-- FullCalendar -->
+<!-- FullCalendar and Moment.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
 
@@ -328,7 +292,7 @@ try {
             height: 'auto',
             eventClick: function (event) {
                 // Modal to display event details
-                let details = `
+                var modalHtml = `
                     <div class="modal fade" id="eventDetailsModal" tabindex="-1" role="dialog">
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
@@ -347,8 +311,14 @@ try {
                         </div>
                     </div>
                 `;
-                $('body').append(details);
+
+                // Append modal to body
+                $('body').append(modalHtml);
+
+                // Show modal
                 $('#eventDetailsModal').modal('show');
+
+                // Remove modal when closed
                 $('#eventDetailsModal').on('hidden.bs.modal', function () {
                     $(this).remove();
                 });

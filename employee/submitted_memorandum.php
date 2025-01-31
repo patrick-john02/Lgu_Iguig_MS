@@ -1,37 +1,31 @@
 <?php 
 include('../config/config.php');
+
 // Start session to get the logged-in user's ID
 session_start();
 $logged_in_user_id = $_SESSION['user_id'] ?? null;
 
-// Ensure the user is logged in
-if (!$logged_in_user_id) {
-    echo "You must be logged in to view this page.";
-    exit;
-}
-
+// Query to fetch all public memorandums (not filtering by authored_by)
 $query = "
     SELECT 
         d.document_id, 
         d.title, 
         d.document_type, 
         d.date, 
-        d.subject
+        d.subject, 
+        df.file_path
     FROM Document d
-    WHERE d.authored_by = :authored_by
-    AND d.document_type = 'Memorandum'  -- Filter for Memorandum documents only
+    LEFT JOIN documentfiles df ON d.document_id = df.document_id
+    WHERE d.document_type = 'Memorandum'  -- Filter for Memorandum documents only
     AND d.is_archived = 0               -- Exclude archived documents
     AND d.is_rejected = 0               -- Exclude rejected documents
     AND d.is_approved = 0               -- Exclude approved documents
     ORDER BY d.date DESC";
 
 $stmt = $pdo->prepare($query);
-$stmt->bindValue(':authored_by', $logged_in_user_id, PDO::PARAM_INT);
 $stmt->execute();
 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -168,7 +162,7 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <!-- page content -->
         <div class="right_col" role="main">
           <div class="">
-          <p>Your Submitted Memorandum</p>
+          <p>Memorandum</p>
 <div class="row no-print">
     <div class="">
         <button class="btn btn-default" onclick="printTable();"><i class="fa fa-print"></i> Print Table</button>
@@ -176,7 +170,7 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
             <div class="page-title">
               <div class="title_left">
-                <h3>Pending Memorandum Lists</h3>
+                <h3> Memorandum Lists</h3>
               </div>
 
             </div>
@@ -227,22 +221,24 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <td><?= htmlspecialchars($row['date'], ENT_QUOTES, 'UTF-8'); ?></td>
                     <td><?= htmlspecialchars($row['subject'], ENT_QUOTES, 'UTF-8'); ?></td>
                     <td>
-                        <!-- View Timeline button -->
-                        <a href="user_document_info.php?document_id=<?= htmlspecialchars($row['document_id'], ENT_QUOTES, 'UTF-8'); ?>" 
-                           class="btn btn-primary btn-sm">
-                            View Timeline
-                        </a>
+                        <!-- View File button -->
+                        <?php if ($row['file_path']): ?>
+                            <a href="view_file.php?file_path=<?= urlencode($row['file_path']); ?>" class="btn btn-primary btn-sm">
+                                View File
+                            </a>
+                        <?php else: ?>
+                            <span>No file uploaded</span>
+                        <?php endif; ?>
                     </td>
                 </tr>
             <?php endforeach; ?>
         <?php else: ?>
             <tr>
-                <td colspan="6" class="text-center">No pending Memorandums found.</td>
+                <td colspan="6" class="text-center">No memorandums found.</td>
             </tr>
         <?php endif; ?>
     </tbody>
 </table>
-
                   </div>
                 </div>
                 

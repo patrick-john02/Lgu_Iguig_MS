@@ -9,27 +9,27 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] !== 1) {
 include('../config/config.php');
 
 try {
-    // Fetch users with role_id = 2, including position name
     $sql = "SELECT 
-    u.user_id, 
-    u.username, 
-    u.email, 
-    u.first_name, 
-    u.last_name, 
-    u.status, 
-    r.role_name, 
-    p.position_name,
-    u.is_deleted
+        u.user_id, 
+        u.username, 
+        u.email, 
+        u.first_name, 
+        u.last_name, 
+        u.status, 
+        r.role_name, 
+        p.position_name,
+        u.is_deleted,
+        u.profile_picture
     FROM 
-    users u
+        users u
     JOIN 
-    roles r ON u.role_id = r.role_id
+        roles r ON u.role_id = r.role_id
     LEFT JOIN 
-    positions p ON u.position_id = p.id
+        positions p ON u.position_id = p.id
     WHERE 
-    u.role_id = 2 
+        u.role_id = 2 
     AND 
-    u.is_deleted = 0"; // Exclude soft deleted users
+        u.is_deleted = 0";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
@@ -46,21 +46,20 @@ try {
     $positions_stmt = $pdo->prepare($positions_sql);
     $positions_stmt->execute();
     $positions = $positions_stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
 } catch (PDOException $e) {
     echo "Error fetching data: " . $e->getMessage();
     exit;
-
-
 }
 
 if (isset($_SESSION['success_message'])) {
-  $success_message = $_SESSION['success_message'];
-  unset($_SESSION['success_message']); // Clear the message after showing it
+    $success_message = $_SESSION['success_message'];
+    unset($_SESSION['success_message']); // Clear the message after showing it
 } else {
-  $success_message = null;
+    $success_message = null;
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -233,7 +232,7 @@ if (isset($_SESSION['success_message'])) {
         <table class="table table-striped">
     <thead>
         <tr>
-            <th hidden>#</th>
+            <th hidden>Profile Picture</th>
             <th>Username</th>
             <th>Email</th>
             <th>Full Name</th>
@@ -244,41 +243,42 @@ if (isset($_SESSION['success_message'])) {
         </tr>
     </thead>
     <tbody>
-    <?php if (!empty($users)): ?>
-        <?php foreach ($users as $user): ?>
-            <tr>
-                <td hidden><?php echo htmlspecialchars($user['user_id']); ?></td>
-                <td><?php echo htmlspecialchars($user['username']); ?></td>
-                <td><?php echo htmlspecialchars($user['email']); ?></td>
-                <td><?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></td>
-                <td><?php echo htmlspecialchars($user['role_name']); ?></td>
-                <td><?php echo htmlspecialchars($user['position_name'] ?: 'N/A'); ?></td>
-                <td><?php echo htmlspecialchars($user['status']); ?></td>
-                <td>
-                    <?php if ($user['is_deleted'] == 0): ?>
-                        <button 
-                            class="btn btn-sm btn-warning edit-user-btn"
-                            data-user='<?php echo json_encode($user); ?>'>
+        <?php if (!empty($users)): ?>
+            <?php foreach ($users as $user): ?>
+                <tr>
+                    <td hidden>
+                        <img src="<?php echo htmlspecialchars($user['profile_picture'] ?: 'default.jpg'); ?>" 
+                             alt="Profile Picture" 
+                             class="img-thumbnail" 
+                             style="width: 50px; height: 50px;">
+                    </td>
+                    <td><?php echo htmlspecialchars($user['username']); ?></td>
+                    <td><?php echo htmlspecialchars($user['email']); ?></td>
+                    <td><?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></td>
+                    <td><?php echo htmlspecialchars($user['role_name']); ?></td>
+                    <td><?php echo htmlspecialchars($user['position_name'] ?: 'N/A'); ?></td>
+                    <td><?php echo htmlspecialchars($user['status']); ?></td>
+                    <td>
+                        <button class="btn btn-sm btn-warning edit-user-btn" 
+                                data-user='<?php echo json_encode($user); ?>'>
                             <i class="fa fa-pencil"></i> Edit
                         </button>
-                        <a href="delete_user.php?id=<?php echo $user['user_id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this user?');">
+                        <a href="delete_user.php?id=<?php echo $user['user_id']; ?>" 
+                           class="btn btn-sm btn-danger" 
+                           onclick="return confirm('Are you sure you want to delete this user?');">
                             <i class="fa fa-trash"></i> Delete
                         </a>
-                    <?php else: ?>
-                        <button class="btn btn-sm btn-secondary" disabled>
-                            <i class="fa fa-trash"></i> Deleted
-                        </button>
-                    <?php endif; ?>
-                </td>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <tr>
+                <td colspan="8" class="text-center">No users found.</td>
             </tr>
-        <?php endforeach; ?>
-    <?php else: ?>
-        <tr>
-            <td colspan="8" class="text-center">No users found.</td>
-        </tr>
-    <?php endif; ?>
-</tbody>
+        <?php endif; ?>
+    </tbody>
 </table>
+
 
                   </div>
                 </div>
@@ -351,7 +351,7 @@ if (isset($_SESSION['success_message'])) {
 </div>
 
 
-<!-- Edit User Modal -->
+<!-- Modal Structure for Editing User -->
 <div id="editUserModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -363,55 +363,70 @@ if (isset($_SESSION['success_message'])) {
                     </button>
                 </div>
                 <div class="modal-body">
+                    <!-- Hidden Field for User ID -->
                     <input type="hidden" name="user_id" id="editUserId">
+
+                    <!-- Username Field -->
                     <div class="form-group">
-                        <label for="editUsername" hidden>Username</label>
-                        <input type="text" class="form-control" id="editUsername" name="username" required hidden>
+                        <label for="editUsername">Username</label>
+                        <input type="text" class="form-control" id="editUsername" name="username" required>
                     </div>
+
+                    <!-- Email Field -->
                     <div class="form-group">
                         <label for="editEmail">Email</label>
                         <input type="email" class="form-control" id="editEmail" name="email" required>
                     </div>
+
+                    <!-- First Name Field -->
                     <div class="form-group">
                         <label for="editFirstName">First Name</label>
                         <input type="text" class="form-control" id="editFirstName" name="first_name" required>
                     </div>
+
+                    <!-- Last Name Field -->
                     <div class="form-group">
                         <label for="editLastName">Last Name</label>
                         <input type="text" class="form-control" id="editLastName" name="last_name" required>
                     </div>
+
+                    <!-- Position Field -->
                     <div class="form-group">
                         <label for="editPosition">Position</label>
                         <select class="form-control" id="editPosition" name="position_id">
-                            <option value="">Select Position</option>
-                            <?php
-                            $positionSql = "SELECT id, position_name FROM positions";
-                            $positionStmt = $pdo->prepare($positionSql);
-                            $positionStmt->execute();
-                            $positions = $positionStmt->fetchAll(PDO::FETCH_ASSOC);
-                            foreach ($positions as $position) {
-                                echo "<option value='" . $position['id'] . "'>" . htmlspecialchars($position['position_name']) . "</option>";
-                            }
-                            ?>
+                            <option value="">--Select Position--</option>
+                            <?php foreach ($positions as $position): ?>
+                                <option value="<?php echo htmlspecialchars($position['id']); ?>">
+                                    <?php echo htmlspecialchars($position['position_name']); ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
+
+                    <!-- Status Field -->
                     <div class="form-group">
                         <label for="editStatus">Status</label>
                         <select class="form-control" id="editStatus" name="status">
                             <option value="active">Active</option>
                             <option value="inactive">Inactive</option>
-                            <option value="suspended">Suspended</option>
                         </select>
                     </div>
+
+                    <!-- QR Code Generation Section -->
+                    <div id="qrCodeContainer"></div>
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-info" id="generateQRCodeBtn">Generate QR Code</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+
 
 <script>
     function openEditModal(user) {
@@ -440,7 +455,34 @@ if (isset($_SESSION['success_message'])) {
     });
 </script>
 
+<script>
+    document.getElementById('generateQRCodeBtn').addEventListener('click', function() {
+    const userId = document.getElementById('editUserId').value; // Get user ID
+    const userData = {
+        userId: userId,
+        username: document.getElementById('editUsername').value,
+        email: document.getElementById('editEmail').value,
+        firstName: document.getElementById('editFirstName').value,
+        lastName: document.getElementById('editLastName').value
+    };
 
+    const qrCodeContainer = document.createElement('div'); // Create container for QR code
+    const qrcode = new QRCode(qrCodeContainer, {
+        text: JSON.stringify(userData), // Store user info in QR code
+        width: 128,
+        height: 128
+    });
+
+    // Add QR Code to modal
+    const qrCodeModal = document.getElementById('editUserModal');
+    qrCodeModal.querySelector('.modal-body').appendChild(qrCodeContainer);
+
+    // Optionally, you can trigger an email sending process after QR code generation
+    // Make an AJAX request to send the QR code image and user details to the server.
+});
+
+</script>
+<script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
 
     <!-- jQuery -->
     <script src="../prod/vendors/jquery/dist/jquery.min.js"></script>

@@ -33,32 +33,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// Fetch all non-archived, non-approved, and non-rejected Memorandums
-try {
-    $query = "
-        SELECT 
-            d.document_id AS document_id, 
-            d.title AS resolution_title,
-            d.date AS resolution_date,
-            d.subject AS resolution_subject,
-            CONCAT(u.first_name, ' ', u.last_name) AS author_name
-        FROM document d
-        LEFT JOIN users u ON d.authored_by = u.user_id
-        WHERE d.document_type = 'Memorandum'
-          AND d.is_archived = 0  -- Exclude archived Memorandum
-          AND d.is_approved = 0  -- Exclude approved Memorandum
-          AND d.is_rejected = 0  -- Exclude rejected Memorandum
-        ORDER BY d.date DESC
-    ";
+// Query to fetch all public memorandums (not filtering by authored_by)
+$query = "
+    SELECT 
+        d.document_id, 
+        d.title, 
+        d.document_type, 
+        d.date, 
+        d.subject, 
+        df.file_path
+    FROM Document d
+    LEFT JOIN documentfiles df ON d.document_id = df.document_id
+    WHERE d.document_type = 'Memorandum'  -- Filter for Memorandum documents only
+    AND d.is_archived = 0               -- Exclude archived documents
+    AND d.is_rejected = 0               -- Exclude rejected documents
+    AND d.is_approved = 0               -- Exclude approved documents
+    ORDER BY d.date DESC";
 
-    $stmt = $pdo->prepare($query);
-    $stmt->execute();
-
-    $resolutions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo "Error fetching Memorandums: " . $e->getMessage();
-    exit;
-}
+$stmt = $pdo->prepare($query);
+$stmt->execute();
+$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 
@@ -215,38 +209,41 @@ try {
 <div class="table-responsive">
     
 
-<table class="table table-striped jambo_table bulk_action">
+<table id="datatable-responsive" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
     <thead>
-        <tr class="headings">
-            <td class="a-center">
-                <input type="checkbox" id="check-all" class="flat">
-            </td>
-            <th class="column-title">Memorandum ID</th>
-            <th class="column-title">Memorandum Title</th>
-            <th class="column-title">Date</th>
-            <th class="column-title">Author</th>
-            <th class="column-title no-link last"><span class="nobr">Action</span></th>
+        <tr>
+            <th>Memorandum No.</th>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Date</th>
+            <th>Subject</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
-        <?php if (!empty($resolutions)): ?>
-            <?php foreach ($resolutions as $resolution): ?>
-                <tr class="even pointer">
-                    <td class="a-center">
-                        <input type="checkbox" class="flat" name="table_records" data-id="<?php echo htmlspecialchars($resolution['document_id']); ?>">
-                    </td>
-                    <td class=""><?php echo htmlspecialchars($resolution['document_id']); ?></td>
-                    <td class=""><?php echo htmlspecialchars($resolution['resolution_title']); ?></td>
-                    <td class=""><?php echo htmlspecialchars($resolution['resolution_date']); ?></td>
-                    <td class=""><?php echo htmlspecialchars($resolution['author_name']); ?></td>
-                    <td class="last">
-                        <a href="document_info.php?document_id=<?php echo urlencode($resolution['document_id']); ?>">View</a>
+        <?php if (!empty($result)): ?>
+            <?php foreach ($result as $row): ?>
+                <tr>
+                    <td><?= htmlspecialchars($row['document_id'], ENT_QUOTES, 'UTF-8'); ?></td>
+                    <td><?= htmlspecialchars($row['title'], ENT_QUOTES, 'UTF-8'); ?></td>
+                    <td><?= htmlspecialchars($row['document_type'], ENT_QUOTES, 'UTF-8'); ?></td>
+                    <td><?= htmlspecialchars($row['date'], ENT_QUOTES, 'UTF-8'); ?></td>
+                    <td><?= htmlspecialchars($row['subject'], ENT_QUOTES, 'UTF-8'); ?></td>
+                    <td>
+                        <!-- View File button -->
+                        <?php if ($row['file_path']): ?>
+                            <a href="view_file.php?file_path=<?= urlencode($row['file_path']); ?>" class="btn btn-primary btn-sm">
+                                View File
+                            </a>
+                        <?php else: ?>
+                            <span>No file uploaded</span>
+                        <?php endif; ?>
                     </td>
                 </tr>
             <?php endforeach; ?>
         <?php else: ?>
             <tr>
-                <td colspan="6" class="text-center">No submitted Memorandums found.</td>
+                <td colspan="6" class="text-center">No memorandums found.</td>
             </tr>
         <?php endif; ?>
     </tbody>

@@ -76,7 +76,8 @@ try {
                 
                 <ul class="nav side-menu">
                 <li><a href="employee_dashboard.php"><i class="fa fa-home"></i>HOME</a></li>
-                <li><a href="send_request_letter.php"><i class="fa fa-paper-plane"></i> Send a Request Letter</a></li>
+                <li><a href="send_request_letter.php"><i class="fa fa-paper-plane"></i>Send a Request Letter </a></li>
+                <li><a href="atttend_session.php"><i class="fa fa-check-square"></i>Attendance </a></li>
 
                 <li><a><i class="fa fa-file"></i>Lists of Resolution <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
@@ -96,9 +97,9 @@ try {
 
                   <li><a><i class="fa fa-file"></i>Lists of Memorandum <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
-                      <li><a href="submitted_memorandum.php">Submitted Memorandum</a></li>
-                      <li><a href="approved_memorandum.php">Approved Memorandum</a></li>
-                      <li><a href="rejected_memorandum.php">Rejected Memorandum</a></li>
+                      <li><a href="submitted_memorandum.php">Memorandum</a></li>
+                      <!-- <li><a href="approved_memorandum.php">Approved Memorandum</a></li>
+                      <li><a href="rejected_memorandum.php">Rejected Memorandum</a></li> -->
                      
                     </ul>
                   </li>

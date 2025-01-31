@@ -20,6 +20,7 @@
 
     <!-- Custom Theme Style -->
     <link href="../prod/build/css/custom.min.css" rel="stylesheet">
+    
   </head>
 
   <body class="login">
@@ -54,6 +55,8 @@
 
                 <div>
   <p>Welcome to the LGU Iguig Admin Login. Please enter your credentials to log in.</p>
+  <a href = "../super_admin/admin_login.php">Super Admin Login</a>
+                  
 </div>
               </div>
             </form>

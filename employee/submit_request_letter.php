@@ -15,7 +15,7 @@ try {
             $file_tmp = $_FILES['file_upload']['tmp_name'];
             $file_name = $_FILES['file_upload']['name'];
             $file_ext = pathinfo($file_name, PATHINFO_EXTENSION);
-            $allowed_extensions = ['pdf', 'docx', 'jpg', 'png', 'xlsx'];
+            $allowed_extensions = ['pdf', 'jpg', 'png'];
 
             if (!in_array($file_ext, $allowed_extensions)) {
                 throw new Exception("Invalid file type. Allowed types: PDF, DOCX, JPG, PNG, XLSX.");

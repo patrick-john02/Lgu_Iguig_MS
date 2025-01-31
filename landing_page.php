@@ -26,6 +26,8 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
   <!-- Main CSS File -->
   <link href="prod/assets/css/main.css" rel="stylesheet">
 
@@ -45,6 +47,7 @@
       <nav id="navmenu" class="navmenu">
         <ul>
           <li><a href="landing_page.php" class="active">Home</a></li>
+          <li><a href="scanner.php" class="">Attendance</a></li>
           <!-- <li><a href="services.html">About</a></li> -->
           <li>
             <button 
@@ -218,6 +221,7 @@
       <li data-filter=".filter-app">SANGGUNIANG BAYAN MEMBERS</li>
       <li data-filter=".filter-product">SK FEDERATION PRESIDENT</li>
       <li data-filter=".filter-branding">LNB PRESIDENT</li>
+      <li data-filter=".filter-devs">DEVELOPERS</li>
      
     </ul><!-- End Portfolio Filters -->
 
@@ -243,6 +247,8 @@
           
         </div>
       </div><!-- End Portfolio Item -->
+
+      
 
       <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product">
         <img src="prod/assets/img/masonry-portfolio/5.png" class="img-fluid" alt="">
@@ -363,7 +369,7 @@
 
 
 
- <!-- Login Modal -->
+<!-- Login Modal -->
 <div class="modal fade" id="Login" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -372,13 +378,12 @@
                 <h4 class="modal-title">Login</h4>
             </div>
             <div class="modal-body">
-            <?php
-if (isset($_SESSION['error_message'])) {
-    echo "<script>$('#loginError').text('" . $_SESSION['error_message'] . "').show();</script>";
-    unset($_SESSION['error_message']);
-}
-?>
-
+                <?php
+                if (isset($_SESSION['error_message'])) {
+                    echo "<script>$('#loginError').text('" . $_SESSION['error_message'] . "').show();</script>";
+                    unset($_SESSION['error_message']);
+                }
+                ?>
                 <form id="loginForm" method="POST" action="login.php">
                     <div class="form-group">
                         <label for="username">Username</label>
@@ -386,7 +391,10 @@ if (isset($_SESSION['error_message'])) {
                     </div>
                     <div class="form-group">
                         <label for="password">Password:</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="position-relative">
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <i class="fa fa-eye position-absolute" id="eye-icon-password" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;" onclick="togglePassword('password')"></i>
+                        </div>
                     </div>
                     <div class="form-group">
                         <div class="form-check">
@@ -404,6 +412,26 @@ if (isset($_SESSION['error_message'])) {
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Toggle password visibility function
+        window.togglePassword = function (id) {
+            const passwordField = document.getElementById(id);
+            const eyeIcon = document.getElementById(`eye-icon-${id}`);
+
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                eyeIcon.classList.remove("fa-eye");
+                eyeIcon.classList.add("fa-eye-slash");
+            } else {
+                passwordField.type = "password";
+                eyeIcon.classList.remove("fa-eye-slash");
+                eyeIcon.classList.add("fa-eye");
+            }
+        };
+    });
+</script>
 
 
 <!-- Modal for Register -->
@@ -435,7 +463,14 @@ if (isset($_SESSION['error_message'])) {
           </div>
           <div class="form-group">
             <label for="password">Password:</label>
-            <input type="password" class="form-control" id="reg_password" name="password" required>
+            <div class="position-relative">
+              <input type="password" class="form-control" id="reg_password" name="password" required>
+              <i class="fa fa-eye position-absolute" id="eye-icon-reg_password" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;" onclick="togglePassword('reg_password')"></i>
+            </div>
+            <small id="passwordHelp" class="form-text text-muted">
+              Password must be at least 8 characters long, contain an uppercase letter, a lowercase letter, and a special character.
+            </small>
+            <div id="passwordWarning" class="text-danger" style="font-size: 0.9em; display: none;"></div>
           </div>
           <button type="submit" class="btn btn-success">Register</button>
         </form>
@@ -452,6 +487,67 @@ if (isset($_SESSION['error_message'])) {
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const passwordInput = document.getElementById("reg_password");
+    const passwordWarning = document.getElementById("passwordWarning");
+
+    // Function to validate the password
+    function validatePassword(password) {
+      const minLength = /.{8,}/;
+      const uppercase = /[A-Z]/;
+      const lowercase = /[a-z]/;
+      const specialChar = /[!@#$%^&*(),.?":{}|<>]/;
+
+      let errors = [];
+      if (!minLength.test(password)) {
+        errors.push("Must be at least 8 characters long.");
+      }
+      if (!uppercase.test(password)) {
+        errors.push("Must contain at least one uppercase letter.");
+      }
+      if (!lowercase.test(password)) {
+        errors.push("Must contain at least one lowercase letter.");
+      }
+      if (!specialChar.test(password)) {
+        errors.push("Must contain at least one special character.");
+      }
+
+      return errors;
+    }
+
+    // Event listener for password input
+    passwordInput.addEventListener("input", function () {
+      const password = passwordInput.value;
+      const errors = validatePassword(password);
+
+      if (errors.length > 0) {
+        passwordWarning.style.display = "block";
+        passwordWarning.innerHTML = errors.join("<br>");
+      } else {
+        passwordWarning.style.display = "none";
+      }
+    });
+
+    // Toggle password visibility function
+    window.togglePassword = function (id) {
+      const passwordField = document.getElementById(id);
+      const eyeIcon = document.getElementById(`eye-icon-${id}`);
+
+      if (passwordField.type === "password") {
+        passwordField.type = "text";
+        eyeIcon.classList.remove("fa-eye");
+        eyeIcon.classList.add("fa-eye-slash");
+      } else {
+        passwordField.type = "password";
+        eyeIcon.classList.remove("fa-eye-slash");
+        eyeIcon.classList.add("fa-eye");
+      }
+    };
+  });
+</script>
+
 
   </main>
   <footer id="footer" class="footer dark-background">

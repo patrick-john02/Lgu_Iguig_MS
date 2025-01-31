@@ -1,0 +1,495 @@
+<?php
+session_start();
+
+// Ensure only admin can perform this action
+if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] !== 3) {
+    header("Location: admin_login.php");
+    exit();
+}
+
+include('../config/config.php');
+
+try {
+    // Fetch all document types (Resolution, Ordinance, Memorandum) sorted by date (latest first)
+    $query = "
+        SELECT 
+            d.document_id AS document_id, 
+            d.title AS document_title,
+            d.date AS document_date,
+            d.subject AS document_subject,
+            CONCAT(u.first_name, ' ', u.last_name) AS author_name,
+            d.file_path AS file_path
+        FROM document d
+        LEFT JOIN users u ON d.authored_by = u.user_id
+        WHERE d.is_archived = 0 -- Exclude archived documents if not needed
+        ORDER BY d.date DESC
+    ";
+
+
+    $stmt = $pdo->prepare($query);
+    $stmt->execute();
+
+    $documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Error fetching documents: " . $e->getMessage();
+    exit;
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" href="images/favicon.ico" type="image/ico" />
+
+    <title>Admin Dashboard</title>
+
+    <!-- Bootstrap -->
+    <link href="../prod/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="../prod/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <!-- NProgress -->
+    <link href="../prod/vendors/nprogress/nprogress.css" rel="stylesheet">
+    <!-- iCheck -->
+    <link href="../prod/vendors/iCheck/skins/flat/green.css" rel="stylesheet">
+	
+    <!-- bootstrap-progressbar -->
+    <link href="../prod/vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css" rel="stylesheet">
+    <!-- JQVMap -->
+    <link href="../prod/vendors/jqvmap/dist/jqvmap.min.css" rel="stylesheet"/>
+    <!-- bootstrap-daterangepicker -->
+    <link href="../prod/vendors/bootstrap-daterangepicker/daterangepicker.css" rel="stylesheet">
+
+    <!-- Custom Theme Style -->
+    <link href="../prod/build/css/custom.min.css" rel="stylesheet">
+    <style>
+      .nav_title {
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    height: 60px; 
+    background-color: #2A3F54; 
+    text-align: center;
+    border-radius: 5px;
+    padding: 10px; 
+}
+
+.nav_title .site_title {
+    font-size: 20px; 
+    font-weight: bold; 
+    color: white; 
+    text-decoration: none; 
+}
+
+
+.nav_title .site_title:hover {
+    color: #1ABB9C; 
+    text-decoration: none; 
+}
+      .profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center; 
+    text-align: center; 
+    padding: 1px; 
+}
+
+.profile_info span {
+    font-size: 16px; /
+    color: white;
+}
+
+.profile_info h2 {
+    font-size: 15px; 
+    margin: 5px 0; 
+    font-weight: bold; 
+    color: white; 
+}
+
+  .fixed-size-box {
+    width: 100%; 
+    height: 250px; 
+    padding: 90px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    background-color: #f5f5f5;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center; 
+  }
+
+  .icon-title {
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+  }
+
+  .icon {
+    font-size: 2em;
+    margin-right: 10px; 
+  }
+
+  .tile-stats .count {
+    font-size: 2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .tile-stats h3 {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 0;
+  }
+
+ 
+  .top_tiles .col-lg-3, .top_tiles .col-md-3, .top_tiles .col-sm-6 {
+    padding: 10px;
+  }
+
+  @media (max-width: 767px) {
+    .tile-stats.fixed-size-box {
+      height: 220px;
+    }
+  }
+</style>
+  </head>
+
+  <body class="nav-md">
+    <div class="container body">
+      <div class="main_container">
+        <div class="col-md-3 left_col">
+          <div class="left_col scroll-view">
+
+         
+          <?php  include ('includes/admin_sidebar.php');?>
+          <?php include ('includes/admin_navbar.php');?>
+
+       <!-- page content -->
+       <div class="right_col" role="main">
+       <div class="x_content">
+
+<h1>All Documents</h1>
+<div class="row no-print">
+    <div class="">
+        <button class="btn btn-default" onclick="printTable();"><i class="fa fa-print"></i> Print Table</button>
+    </div>
+</div>
+
+<!-- <div class="row" style="margin-bottom: 15px;">
+    
+    <div class="col-md-6">
+        <label for="statusDateFilter">Filter by Status and Date</label>
+        <div class="d-flex">
+            <select id="statusFilter" class="form-control" style="margin-right: 10px;">
+                <option value="">All Status</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="archived">Archived</option>
+            </select>
+            <div id="reportrange" class="form-control" style="cursor: pointer; padding: 6px; border: 1px solid #ccc;">
+                <i class="fa fa-calendar"></i>
+                <span>All Dates</span> <b class="caret"></b>
+            </div>
+        </div>
+    </div>
+</div> -->
+
+<div class="table-responsive">
+    <input type="text" id="tableSearch" class="form-control" placeholder="Search all data" style="margin-bottom: 10px; width: 100%;">
+    <table id="documentTable" class="table table-striped jambo_table bulk_action">
+        <thead>
+            <tr>
+                <th>Document ID</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Date</th>
+                <th>Subject</th>
+                <th>File</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (!empty($documents)): ?>
+                <?php foreach ($documents as $document): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($document['document_id']) ?></td>
+                        <td><?= htmlspecialchars($document['document_title']) ?></td>
+                        <td><?= htmlspecialchars($document['author_name']) ?></td>
+                        <td><?= htmlspecialchars($document['document_date']) ?></td>
+                        <td><?= htmlspecialchars($document['document_subject']) ?></td>
+                        <td>
+                            <?php if (!empty($document['file_path'])): ?>
+                                <a href="<?= htmlspecialchars($document['file_path']) ?>" target="_blank">View</a> | 
+                                <a href="<?= htmlspecialchars($document['file_path']) ?>" download>Download</a>
+                            <?php else: ?>
+                                No File
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="6">No documents found.</td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+<!-- <button id="archiveButton" class="btn btn-danger">Archive</button> -->
+
+</div>
+              </div>
+          </div>
+        </div>
+        <footer>
+          <div class="pull-right">
+          
+          </div>
+          <div class="clearfix"></div>
+        </footer>
+        <!-- /footer content -->
+      </div>
+    </div>
+    <script>
+    function printTable() {
+        var printWindow = window.open('', '', 'height=600,width=800');
+        var tableContent = document.querySelector('.table').outerHTML;  // Get the table HTML
+        
+        // Construct the content of the print window
+        printWindow.document.write('<html><head><title>Print Table</title>');
+        printWindow.document.write('<link href="../vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">');
+        printWindow.document.write('<style>');
+        printWindow.document.write('body { font-family: Arial, sans-serif; margin: 0; padding: 0; }');
+        printWindow.document.write('.header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; }');
+        printWindow.document.write('.header h1 { text-align: center; flex-grow: 1; margin: 0; }');
+        printWindow.document.write('.header h2, .header h5 { text-align: center; margin: 0; }');
+        printWindow.document.write('.header img { max-width: 100px; height: auto; }');
+        
+        // Style for the table to center it
+        printWindow.document.write('.table-container { display: flex; justify-content: center; margin-top: 20px; }');
+        printWindow.document.write('table { width: 80%; border-collapse: collapse; }');
+        printWindow.document.write('table, th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }');
+        
+        // Hide specific columns (1, 3, and 6)
+        printWindow.document.write('th:nth-child(1), td:nth-child(1), th:nth-child(3), td:nth-child(3), th:nth-child(6), td:nth-child(6) { display: none; }');
+        
+        printWindow.document.write('</style></head><body>');
+        
+        // Add custom header with logos and title centered
+        printWindow.document.write('<div class="header">');
+        // Left logo
+        printWindow.document.write('<img src="../prod/assets/img/lgu.jpg" alt="Left Logo">');
+        
+        // Title (Centered)
+        printWindow.document.write('<div>');
+        printWindow.document.write('<h2>Republic of the Philippines</h2>');
+        printWindow.document.write('<h5>Province of Cagayan</h5>');
+        printWindow.document.write('<h2>MUNICIPALITY OF IGUIG</h2>');
+        printWindow.document.write('<h2><strong>OFFICE OF THE SANGGUNIANG BAYAN</strong></h2>');
+        printWindow.document.write('</div>');
+        
+        // Right logo
+        printWindow.document.write('<img src="../prod/assets/img/astig.png" alt="Right Logo">');
+        printWindow.document.write('</div>');  // End header div
+        
+        // Add the table content to the print window within a container to center it
+        printWindow.document.write('<p>Below is the list of Approved resolutions:</p>');
+        printWindow.document.write('<div class="table-container">');
+       
+        printWindow.document.write(tableContent);
+        printWindow.document.write('</div>');  // End table-container div
+        
+        printWindow.document.write('</body></html>');
+
+        // Ensure the content is fully loaded before printing
+        printWindow.document.close();  // Close the document and open the print dialog
+        printWindow.print();
+    }
+      // Search functionality
+document.getElementById('tableSearch').addEventListener('input', function(event) {
+    var searchTerm = event.target.value.toLowerCase();
+    var rows = document.querySelectorAll('.table tbody tr');
+
+    rows.forEach(function(row) {
+        var cells = row.querySelectorAll('td');
+        var matched = false;
+
+        cells.forEach(function(cell) {
+            if (cell.textContent.toLowerCase().includes(searchTerm)) {
+                matched = true;
+            }
+        });
+
+        if (matched) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+</script>
+<script>
+document.getElementById('archiveButton').addEventListener('click', function() {
+    var selectedIds = [];
+    var checkboxes = document.querySelectorAll('.table tbody input[type="checkbox"]:checked'); // Get checked checkboxes
+
+    checkboxes.forEach(function(checkbox) {
+        var documentId = checkbox.getAttribute('data-id'); // Ensure it's string (document_id from database)
+        if (documentId) {
+            selectedIds.push(documentId); // Collect document_id (string) of checked checkboxes
+        }
+    });
+
+    // Check if any resolutions are selected
+    if (selectedIds.length > 0) {
+        console.log("Selected Resolutions to Archive: ", selectedIds); // Debugging
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'approved_resolution.php', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                alert('Approved Resolutions archived successfully!');
+                location.reload(); // Reload to reflect changes
+            } else {
+                alert('Failed to archive Approved resolutions.');
+            }
+        };
+
+        // Prepare the data to be sent (document_ids should be in the correct format)
+        var data = 'document_ids=' + JSON.stringify(selectedIds);
+        xhr.send(data);
+    } else {
+        alert('No selected documents to archive.');
+    }
+});
+</script>
+<script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const statusFilter = document.getElementById('statusFilter');
+            const resolutionTable = document.getElementById('resolutionTable');
+            const searchInput = document.getElementById('tableSearch');
+            const rows = Array.from(resolutionTable.querySelectorAll('tbody tr'));
+            const dateRangePicker = $('#reportrange span');
+
+            let startDate = null;
+            let endDate = null;
+
+            function filterTable() {
+                const statusValue = statusFilter.value.toLowerCase();
+                const searchTerm = searchInput.value.toLowerCase();
+
+                rows.forEach(row => {
+                    const status = row.getAttribute('data-status') || '';
+                    const date = row.cells[3]?.innerText.trim();
+                    const rowDate = date ? new Date(date) : null;
+                    const rowText = row.innerText.toLowerCase();
+
+                    let showRow = true;
+
+                    if (statusValue && !status.includes(statusValue)) {
+                        showRow = false;
+                    }
+
+                    if (startDate && endDate && rowDate) {
+                        if (rowDate < startDate || rowDate > endDate) {
+                            showRow = false;
+                        }
+                    }
+
+                    if (searchTerm && !rowText.includes(searchTerm)) {
+                        showRow = false;
+                    }
+
+                    row.style.display = showRow ? '' : 'none';
+                });
+            }
+
+            // Date range picker
+            $('#reportrange').daterangepicker({
+                opens: 'left',
+                autoUpdateInput: false,
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                },
+            }, function (start, end) {
+                startDate = start.toDate();
+                endDate = end.toDate();
+                dateRangePicker.text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
+                filterTable();
+            });
+
+            $('#reportrange').on('apply.daterangepicker', function (ev, picker) {
+                startDate = picker.startDate.toDate();
+                endDate = picker.endDate.toDate();
+                dateRangePicker.text(`${picker.startDate.format('MMMM D, YYYY')} - ${picker.endDate.format('MMMM D, YYYY')}`);
+                filterTable();
+            });
+
+            $('#reportrange').on('cancel.daterangepicker', function () {
+                startDate = null;
+                endDate = null;
+                dateRangePicker.text('All Dates');
+                filterTable();
+            });
+
+            statusFilter.addEventListener('change', filterTable);
+            searchInput.addEventListener('input', filterTable);
+
+            dateRangePicker.text('All Dates');
+        });
+    </script>
+
+    <!-- jQuery -->
+    <script src="../prod/vendors/jquery/dist/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="../prod/vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- FastClick -->
+    <script src="../prod/vendors/fastclick/lib/fastclick.js"></script>
+    <!-- NProgress -->
+    <script src="../prod/vendors/nprogress/nprogress.js"></script>
+    <!-- Chart.js -->
+    <script src="../prod/vendors/Chart.js/dist/Chart.min.js"></script>
+    <!-- gauge.js -->
+    <script src="../prod/vendors/gauge.js/dist/gauge.min.js"></script>
+    <!-- bootstrap-progressbar -->
+    <script src="../prod/vendors/bootstrap-progressbar/bootstrap-progressbar.min.js"></script>
+    <!-- iCheck -->
+    <script src="../prod/vendors/iCheck/icheck.min.js"></script>
+    <!-- Skycons -->
+    <script src="../prod/vendors/skycons/skycons.js"></script>
+    <!-- Flot -->
+    <script src="../prod/vendors/Flot/jquery.flot.js"></script>
+    <script src="../prod/vendors/Flot/jquery.flot.pie.js"></script>
+    <script src="../prod/vendors/Flot/jquery.flot.time.js"></script>
+    <script src="../prod/vendors/Flot/jquery.flot.stack.js"></script>
+    <script src="../prod/vendors/Flot/jquery.flot.resize.js"></script>
+    <!-- Flot plugins -->
+    <script src="../prod/vendors/flot.orderbars/js/jquery.flot.orderBars.js"></script>
+    <script src="../prod/vendors/flot-spline/js/jquery.flot.spline.min.js"></script>
+    <script src="../prod/vendors/flot.curvedlines/curvedLines.js"></script>
+    <!-- DateJS -->
+    <script src="../prod/vendors/DateJS/build/date.js"></script>
+    <!-- JQVMap -->
+    <script src="../prod/vendors/jqvmap/dist/jquery.vmap.js"></script>
+    <script src="../prod/vendors/jqvmap/dist/maps/jquery.vmap.world.js"></script>
+    <script src="../prod/vendors/jqvmap/examples/js/jquery.vmap.sampledata.js"></script>
+    <!-- bootstrap-daterangepicker -->
+    <script src="../prod/vendors/moment/min/moment.min.js"></script>
+    <script src="../prod/vendors/bootstrap-daterangepicker/daterangepicker.js"></script>
+
+    <!-- Custom Theme Scripts -->
+    <script src="../prod/build/js/custom.min.js"></script>
+	
+  </body>
+</html>

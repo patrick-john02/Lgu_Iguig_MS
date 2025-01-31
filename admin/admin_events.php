@@ -234,7 +234,7 @@ try {
                             </div>
                             <div class="x_content">
                                 <div class="events-list">
-                                    <h3>Upcoming Events</h3>
+                                  <!--  <h3>Upcoming Events</h3>
                                     <table class="table table-striped">
     <thead>
         <tr>
@@ -249,7 +249,7 @@ try {
             <tr>
                 <td>
                     <?php if (!empty($event['image_path'])): ?>
-                        <!-- Button to view the image in a new tab -->
+                        <!-- Button to view the image in a new tab
                         <a href="<?php echo htmlspecialchars('..' . $event['image_path']); ?>" target="_blank" class="btn btn-primary">View</a>
                     <?php else: ?>
                         No Image
@@ -261,12 +261,12 @@ try {
             </tr>
         <?php endforeach; ?>
     </tbody>
-</table>
+</table>  -->
 
-                                </div>
+                               
+</div>
                                 <div id="calendar"></div>
                             </div>
-                  
                             <div id="eventModalDetails" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -297,10 +297,11 @@ try {
                 </div>
                 <div class="modal-body">
                 <form id="eventForm" action="admin_events.php" method="post" enctype="multipart/form-data">
-    <div class="form-group">
-        <label for="title">Event Title</label>
-        <input type="text" class="form-control" id="title" name="title" required>
-    </div>
+                <div class="form-group">
+    <label for="title">Event Description/Caption</label>
+    <textarea class="form-control" id="title" name="title" rows="4" required></textarea>
+</div>
+
     <div class="form-group">
         <label for="event_date">Event Date</label>
         <input type="date" class="form-control" id="event_date" name="event_date" required min="2000-01-02" max="2030-12-31">
@@ -324,6 +325,7 @@ try {
                     <?php if ($message): ?>
                         <div class="alert alert-info"><?php echo htmlspecialchars($message); ?></div>
                     <?php endif; ?>
+                    
             </div>
         </div>
     </div>
@@ -352,11 +354,7 @@ try {
     <!-- Skycons -->
     <script src="../prod/vendors/skycons/skycons.js"></script>
     <!-- Flot -->
-    <script src="../prod/vendors/Flot/jquery.flot.js"></script>
-    <script src="../prod/vendors/Flot/jquery.flot.pie.js"></script>
-    <script src="../prod/vendors/Flot/jquery.flot.time.js"></script>
-    <script src="../prod/vendors/Flot/jquery.flot.stack.js"></script>
-    <script src="../prod/vendors/Flot/jquery.flot.resize.js"></script>
+
     <!-- Flot plugins -->
     <script src="../prod/vendors/flot.orderbars/js/jquery.flot.orderBars.js"></script>
     <script src="../prod/vendors/flot-spline/js/jquery.flot.spline.min.js"></script>
@@ -384,12 +382,12 @@ try {
 <script>
    $(document).ready(function () {
     $('#calendar').fullCalendar({
-        events: <?php echo json_encode($events); ?>,  // Ensure the format matches
-        height: 'auto',  // Use auto height or set a fixed value
+        events: <?php echo json_encode($events); ?>,  
+        height: 'auto',  
         header: {
             left: 'prev,next today',
             center: 'title',
-            right: 'month,agendaWeek,agendaDay'
+            right: 'month'
         },
         eventClick: function (event) {
             $('#eventModalDetails .modal-title').text(event.title);
@@ -422,8 +420,6 @@ try {
     });
 });
 </script>
-
-
 
 </body>
 </html>
